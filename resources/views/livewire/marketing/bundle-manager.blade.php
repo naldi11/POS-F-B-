@@ -152,8 +152,7 @@
                                 x-on:drop.prevent="
                                     isDropping = false; 
                                     if ($event.dataTransfer.files.length > 0) {
-                                        $refs.fileInput.files = $event.dataTransfer.files;
-                                        $refs.fileInput.dispatchEvent(new Event('change'));
+                                        $wire.upload('image', $event.dataTransfer.files[0]);
                                     }
                                 "
                                 x-bind:class="isDropping ? 'border-orange-500 bg-orange-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'"
@@ -162,14 +161,14 @@
                                 @if ($image)
                                     <div class="relative w-full h-40">
                                         <img src="{{ $image->temporaryUrl() }}" class="w-full h-full object-contain rounded-lg">
-                                        <button type="button" wire:click.prevent="removeImage" onclick="event.preventDefault()" class="absolute top-2 right-2 z-20 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition shadow-lg" title="Hapus Gambar">
+                                        <button type="button" @click.stop.prevent="$wire.removeImage()" class="absolute top-2 right-2 z-20 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition shadow-lg" title="Hapus Gambar">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                         </button>
                                     </div>
                                 @elseif ($bundleId && !$remove_existing_image && \App\Models\Bundle::find($bundleId)->image)
                                     <div class="relative w-full h-40">
                                         <img src="{{ Storage::url(\App\Models\Bundle::find($bundleId)->image) }}" class="w-full h-full object-contain rounded-lg">
-                                        <button type="button" wire:click.prevent="removeImage" onclick="event.preventDefault()" class="absolute top-2 right-2 z-20 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition shadow-lg" title="Hapus Gambar">
+                                        <button type="button" @click.stop.prevent="$wire.removeImage()" class="absolute top-2 right-2 z-20 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition shadow-lg" title="Hapus Gambar">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                         </button>
                                     </div>

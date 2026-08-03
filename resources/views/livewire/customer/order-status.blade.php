@@ -71,11 +71,11 @@
                                 $isCurrent = $index === $currentIndex;
                                 $isFuture = $index > $currentIndex;
                             @endphp
-                            <div class="relative pl-6">
+                            <div class="relative pl-8">
                                 <!-- Bullet -->
-                                <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 bg-white flex items-center justify-center transition-all duration-500
+                                <div class="absolute -left-2.5 top-1 w-5 h-5 rounded-full border-2 bg-white flex items-center justify-center transition-all duration-500
                                     {{ $isPast ? 'border-orange-500 bg-orange-500' : '' }}
-                                    {{ $isCurrent ? 'border-orange-500 ring-4 ring-orange-100 bg-white' : '' }}
+                                    {{ $isCurrent ? 'border-orange-500 shadow-[0_0_0_4px_rgba(255,237,213,1)] bg-white' : '' }}
                                     {{ $isFuture ? 'border-gray-300' : '' }}">
                                     @if($isCurrent)
                                         <div class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
@@ -93,8 +93,9 @@
                     </div>
                 </div>
 
-                <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-100">
-                    <h3 class="font-bold text-gray-900 mb-3 text-sm">Informasi Meja</h3>
+                <div class="mb-4 pb-4 border-b border-gray-100">
+                    <h3 class="font-bold text-gray-900 text-sm">Informasi Meja</h3>
+                </div>
                 
                 <div class="space-y-3 mb-6">
                     <div class="flex justify-between items-center">

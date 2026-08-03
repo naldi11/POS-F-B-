@@ -12,11 +12,24 @@ new #[Layout('layouts.customer')] class extends Component {
     public function mount()
     {
         $tableId = request()->query('table');
-        
+
         if ($tableId) {
             $this->processTable($tableId);
-        } else if (Session::has('table_id')) {
-            $this->redirect(route('customer.menu'), navigate: true);
+        } elseif (Session::has('table_id')) {
+            // Cek apakah ada pesanan aktif (belum selesai) untuk meja ini
+            $activeOrder = \App\Models\Order::where('table_id', Session::get('table_id'))
+                ->whereNotIn('status', ['completed'])
+                ->latest()
+                ->first();
+
+            if ($activeOrder) {
+                // Ada pesanan aktif, langsung ke menu
+                $this->redirect(route('customer.menu'), navigate: true);
+            } else {
+                // Tidak ada pesanan aktif, hapus session & minta scan ulang
+                Session::forget('table_id');
+                Session::forget('table_number');
+            }
         }
     }
 
@@ -89,31 +102,62 @@ new #[Layout('layouts.customer')] class extends Component {
 
             @script
             <script>
-                let html5QrcodeScanner = new Html5QrcodeScanner(
-                    "reader",
-                    { fps: 10, qrbox: {width: 250, height: 250} },
-                    false
-                );
+                let html5Qrcode = null;
+                let currentCameraIndex = 0;
+                let cameras = [];
 
-                html5QrcodeScanner.render((decodedText, decodedResult) => {
-                    // Stop scanning to prevent multiple calls
-                    html5QrcodeScanner.clear();
-                    
-                    try {
-                        let url = new URL(decodedText);
-                        let params = new URLSearchParams(url.search);
-                        let tableId = params.get('table');
-                        if (tableId) {
-                            $wire.processTable(tableId);
-                        } else {
-                            $wire.processTable(decodedText);
-                        }
-                    } catch(e) {
-                        $wire.processTable(decodedText);
+                async function startScanner(cameraId) {
+                    if (html5Qrcode && html5Qrcode.isScanning) {
+                        await html5Qrcode.stop();
                     }
-                }, (error) => {
-                    // console.warn(`Code scan error = ${error}`);
-                });
+                    if (!html5Qrcode) {
+                        html5Qrcode = new Html5Qrcode('reader');
+                    }
+                    await html5Qrcode.start(
+                        cameraId,
+                        { fps: 10, qrbox: { width: 250, height: 250 } },
+                        (decodedText) => {
+                            html5Qrcode.stop();
+                            try {
+                                let url = new URL(decodedText);
+                                let tableId = new URLSearchParams(url.search).get('table');
+                                $wire.processTable(tableId ?? decodedText);
+                            } catch(e) {
+                                $wire.processTable(decodedText);
+                            }
+                        },
+                        () => {}
+                    );
+                }
+
+                async function initScanner() {
+                    try {
+                        cameras = await Html5Qrcode.getCameras();
+                        if (!cameras || cameras.length === 0) {
+                            document.getElementById('reader').innerHTML = '<p style="color:#f97316;text-align:center;padding:1rem;">Kamera tidak ditemukan.</p>';
+                            return;
+                        }
+                        // Default ke kamera belakang jika tersedia
+                        currentCameraIndex = cameras.length > 1 ? 1 : 0;
+                        await startScanner(cameras[currentCameraIndex].id);
+
+                        // Tambahkan tombol switch kamera jika ada lebih dari 1
+                        if (cameras.length > 1) {
+                            const btn = document.createElement('button');
+                            btn.textContent = '🔄 Ganti Kamera';
+                            btn.style.cssText = 'margin-top:10px;width:100%;background:#f97316;color:white;border:none;padding:8px 16px;border-radius:9999px;font-weight:bold;cursor:pointer;transition:0.2s;';
+                            btn.addEventListener('click', async () => {
+                                currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+                                await startScanner(cameras[currentCameraIndex].id);
+                            });
+                            document.getElementById('reader').after(btn);
+                        }
+                    } catch (err) {
+                        console.error('Camera init error:', err);
+                    }
+                }
+
+                initScanner();
             </script>
             @endscript
             

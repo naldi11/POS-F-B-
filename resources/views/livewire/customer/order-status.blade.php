@@ -162,7 +162,8 @@
         </div>
         
         @if($order->status === 'completed')
-        <div class="rounded-2xl p-5 mb-8 text-center shadow-sm border" style="background-color: #f8fafc; border-color: #e2e8f0;">
+        {{-- Download Struk --}}
+        <div class="rounded-2xl p-5 mb-4 text-center shadow-sm border" style="background-color: #f8fafc; border-color: #e2e8f0;">
             <div class="inline-flex items-center justify-center w-12 h-12 rounded-full mb-3" style="background-color: #e2e8f0; color: #0f172a;">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
             </div>
@@ -172,6 +173,25 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 <span>Unduh Gambar Struk</span>
             </a>
+        </div>
+
+        {{-- Tombol Selesai & Tinggalkan Meja --}}
+        <div class="rounded-2xl p-5 mb-8 text-center shadow-sm border border-green-100 bg-green-50">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full mb-3 bg-green-100">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h3 class="font-bold mb-1 text-green-800">Pesanan Selesai!</h3>
+            <p class="text-sm text-green-700 mb-4 leading-relaxed">Terima kasih sudah makan di Rumpo Cafe 🙏<br>Tekan tombol di bawah jika Anda sudah selesai dan ingin meninggalkan meja.</p>
+            <button
+                wire:click="leaveTable"
+                wire:loading.attr="disabled"
+                wire:loading.class="opacity-50 cursor-not-allowed"
+                class="w-full bg-green-600 hover:bg-green-700 active:scale-95 text-white font-bold py-3 px-4 rounded-xl transition shadow-sm flex items-center justify-center space-x-2"
+            >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <span wire:loading.remove wire:target="leaveTable">Saya Sudah Selesai &amp; Tinggalkan Meja</span>
+                <span wire:loading wire:target="leaveTable">Memproses...</span>
+            </button>
         </div>
         @else
         <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6">

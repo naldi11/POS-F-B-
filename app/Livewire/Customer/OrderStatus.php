@@ -6,7 +6,7 @@ use Livewire\Component;
 use Livewire\Attributes\Layout;
 use App\Models\Order;
 use Livewire\Attributes\On;
-
+use Illuminate\Support\Facades\Session;
 use Livewire\WithFileUploads;
 
 #[Layout('layouts.customer')]
@@ -19,13 +19,13 @@ class OrderStatus extends Component
 
     public function mount($id)
     {
-        $this->order = Order::with(['orderDetails.menu', 'payment', 'table'])->findOrFail($id);
+        $this->order = Order::with(['orderDetails.menu', 'orderDetails.bundle', 'payment', 'table'])->findOrFail($id);
     }
 
     public function reuploadPayment()
     {
         $this->validate([
-            'payment_proof' => 'required|image|max:51200', // Max 50MB
+            'payment_proof' => 'required|image|max:51200',
         ]);
 
         $proofPath = $this->payment_proof->store('payments', 'public');
@@ -36,7 +36,6 @@ class OrderStatus extends Component
                 'status' => 'pending'
             ]);
         } else {
-            // Just in case there is no payment record yet (though there should be)
             \App\Models\Payment::create([
                 'order_id' => $this->order->id,
                 'proof_image' => $proofPath,
@@ -49,10 +48,21 @@ class OrderStatus extends Component
         ]);
 
         \App\Events\OrderUpdated::dispatch($this->order);
-        
+
         $this->payment_proof = null;
         $this->order->refresh();
         session()->flash('message', 'Bukti pembayaran berhasil diunggah ulang! Menunggu verifikasi kasir.');
+    }
+
+    /**
+     * Pelanggan menekan tombol "Selesai" → hapus session meja & kembali ke scan QR.
+     */
+    public function leaveTable()
+    {
+        Session::forget('table_id');
+        Session::forget('table_number');
+
+        return $this->redirect(route('welcome'), navigate: true);
     }
 
     #[On('echo:orders,OrderUpdated')]

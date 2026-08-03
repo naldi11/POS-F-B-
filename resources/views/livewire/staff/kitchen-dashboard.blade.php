@@ -43,7 +43,7 @@
                                     {{ $detail->quantity }}x
                                 </div>
                                 <div>
-                                    <span class="font-bold text-gray-900 block">{{ $detail->menu->name }}</span>
+                                    <span class="font-bold text-gray-900 block">{{ $detail->bundle_id ? $detail->bundle->name . ' (Paket)' : $detail->menu->name }}</span>
                                 </div>
                             </li>
                         @endforeach

@@ -43,7 +43,7 @@
                                     </a>
                                 </li>
                                 
-                                @if (auth()->user()->role === 'admin' || auth()->user()->role === 'cashier')
+                                @if (auth()->user()->role === 'cashier')
                                 <li>
                                     <a href="{{ route('staff.cashier') }}" wire:navigate class="group relative flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-orange-50 duration-300 ease-in-out hover:bg-orange-700/80 hover:text-white {{ request()->routeIs('staff.cashier') ? 'bg-orange-700 text-white shadow-inner' : '' }}">
                                         <svg class="w-5 h-5 {{ request()->routeIs('staff.cashier') ? 'text-white' : 'text-orange-200 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
@@ -53,8 +53,7 @@
                                 @endif
                             </ul>
                         </div>
-                        
-                        @if (auth()->user()->role === 'admin')
+                        @if (auth()->user()->role === 'cashier')
                         <div>
                             <h3 class="mb-4 ml-4 text-xs font-bold tracking-wider text-orange-200/80">ADMINISTRATOR</h3>
                             <ul class="mb-6 flex flex-col gap-1.5">
@@ -89,12 +88,6 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{{ route('profile') }}" wire:navigate class="group relative flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-orange-50 duration-300 ease-in-out hover:bg-orange-700/80 hover:text-white {{ request()->routeIs('profile') ? 'bg-orange-700 text-white shadow-inner' : '' }}">
-                                        <svg class="w-5 h-5 {{ request()->routeIs('profile') ? 'text-white' : 'text-orange-200 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                        Profil
-                                    </a>
-                                </li>
-                                <li>
                                     <a href="{{ route('admin.reports') }}" wire:navigate class="group relative flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-orange-50 duration-300 ease-in-out hover:bg-orange-700/80 hover:text-white {{ request()->routeIs('admin.reports') ? 'bg-orange-700 text-white shadow-inner' : '' }}">
                                         <svg class="w-5 h-5 {{ request()->routeIs('admin.reports') ? 'text-white' : 'text-orange-200 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                                         Laporan
@@ -104,7 +97,7 @@
                         </div>
                         @endif
 
-                        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'marketing')
+                        @if (auth()->user()->role === 'admin')
                         <div>
                             <h3 class="mb-4 ml-4 mt-6 text-xs font-bold tracking-wider text-orange-200/80">MARKETING</h3>
                             <ul class="mb-6 flex flex-col gap-1.5">
@@ -116,13 +109,37 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('marketing.promotions') }}" wire:navigate class="group relative flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-orange-50 duration-300 ease-in-out hover:bg-orange-700/80 hover:text-white {{ request()->routeIs('marketing.promotions') ? 'bg-orange-700 text-white shadow-inner' : '' }}">
-                                        <svg class="w-5 h-5 {{ request()->routeIs('marketing.promotions') ? 'text-white' : 'text-orange-200 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        Manajemen Promo
+                                        <svg class="w-5 h-5 {{ request()->routeIs('marketing.promotions') ? 'text-white' : 'text-orange-200 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path></svg>
+                                        Kode Diskon
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('marketing.bundles') }}" wire:navigate class="group relative flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-orange-50 duration-300 ease-in-out hover:bg-orange-700/80 hover:text-white {{ request()->routeIs('marketing.bundles') ? 'bg-orange-700 text-white shadow-inner' : '' }}">
+                                        <svg class="w-5 h-5 {{ request()->routeIs('marketing.bundles') ? 'text-white' : 'text-orange-200 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                        Paket Hemat (Bundling)
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('marketing.loyalty') }}" wire:navigate class="group relative flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-orange-50 duration-300 ease-in-out hover:bg-orange-700/80 hover:text-white {{ request()->routeIs('marketing.loyalty') ? 'bg-orange-700 text-white shadow-inner' : '' }}">
+                                        <svg class="w-5 h-5 {{ request()->routeIs('marketing.loyalty') ? 'text-white' : 'text-orange-200 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        Loyalty Poin
                                     </a>
                                 </li>
                             </ul>
                         </div>
                         @endif
+
+                        <div>
+                            <h3 class="mb-4 ml-4 mt-6 text-xs font-bold tracking-wider text-orange-200/80">AKUN</h3>
+                            <ul class="mb-6 flex flex-col gap-1.5">
+                                <li>
+                                    <a href="{{ route('profile') }}" wire:navigate class="group relative flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-orange-50 duration-300 ease-in-out hover:bg-orange-700/80 hover:text-white {{ request()->routeIs('profile') ? 'bg-orange-700 text-white shadow-inner' : '' }}">
+                                        <svg class="w-5 h-5 {{ request()->routeIs('profile') ? 'text-white' : 'text-orange-200 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                        Profil & Akun
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </nav>
                 </div>
             </aside>

@@ -66,7 +66,7 @@
                             <div class="flex justify-between items-start">
                                 <div class="flex items-start space-x-3">
                                     <div class="w-6 h-6 rounded bg-gray-100 text-gray-600 flex items-center justify-center text-xs font-bold">{{ $detail->quantity }}x</div>
-                                    <span class="text-sm text-gray-800">{{ $detail->menu->name }}</span>
+                                    <span class="text-sm text-gray-800">{{ $detail->bundle_id ? $detail->bundle->name . ' (Paket)' : $detail->menu->name }}</span>
                                 </div>
                                 <span class="text-sm font-semibold text-gray-900">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</span>
                             </div>

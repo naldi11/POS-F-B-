@@ -94,7 +94,7 @@
                         <ul class="space-y-2 text-sm text-gray-700">
                             @foreach($order->orderDetails as $detail)
                                 <li class="flex justify-between">
-                                    <span>{{ $detail->quantity }}x {{ $detail->menu->name }}</span>
+                                    <span>{{ $detail->quantity }}x {{ $detail->bundle_id ? $detail->bundle->name . ' (Paket)' : $detail->menu->name }}</span>
                                     <span>Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</span>
                                 </li>
                             @endforeach

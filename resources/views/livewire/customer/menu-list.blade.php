@@ -43,6 +43,51 @@
             @endforeach
         </div>
 
+        <!-- Bundles Section -->
+        @if(!$selectedCategory && $bundles->count() > 0)
+        <div class="mb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                <h2 class="text-xl font-bold text-gray-800">Paket Hemat</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                @foreach($bundles as $bundle)
+                    <div wire:click="openBundleDetail({{ $bundle->id }})" class="cursor-pointer bg-gradient-to-br from-orange-50 to-white rounded-3xl shadow-[0_2px_10px_rgb(0,0,0,0.06)] border border-orange-100 overflow-hidden flex flex-row sm:flex-col items-stretch transform transition hover:shadow-md active:scale-[0.98]">
+                        <div class="relative w-1/3 sm:w-full h-32 sm:h-40 flex-shrink-0">
+                            @if($bundle->image)
+                                <img src="{{ Storage::url($bundle->image) }}" alt="{{ $bundle->name }}" class="w-full h-full object-cover">
+                            @else
+                                <div class="w-full h-full bg-orange-100/50 flex items-center justify-center text-orange-300">
+                                    <svg class="w-8 h-8 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                </div>
+                            @endif
+                            <div class="absolute top-2 left-2 bg-orange-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center space-x-1 z-10">
+                                <span>PROMO PAKET</span>
+                            </div>
+                        </div>
+                        <div class="p-4 flex flex-col flex-grow justify-between w-2/3 sm:w-full">
+                            <div>
+                                <h3 class="font-bold text-gray-900 text-base leading-tight mb-1">{{ $bundle->name }}</h3>
+                                <p class="text-xs text-gray-500 line-clamp-2 mb-3">{{ $bundle->description }}</p>
+                            </div>
+                            <div class="flex justify-between items-center w-full">
+                                <span class="font-extrabold text-orange-600 text-[15px]">Rp {{ number_format($bundle->price, 0, ',', '.') }}</span>
+                                <div class="p-2 bg-orange-500 text-white rounded-full flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <h2 class="text-xl font-bold text-gray-800">Semua Menu</h2>
+        </div>
+        @endif
+
         <!-- Menu Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             @forelse($menus as $menu)
@@ -106,7 +151,7 @@
     @endif
 
     <!-- Bottom Sheet Modal -->
-    @if($showModal && $selectedMenu)
+    @if($showModal && ($selectedMenu || $selectedBundle))
     <div class="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
         <!-- Backdrop -->
         <div wire:click="closeDetail" class="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"></div>
@@ -121,8 +166,11 @@
 
             <!-- Image Area -->
             <div class="w-full h-56 bg-gray-100 relative shrink-0">
-                @if($selectedMenu->image)
-                    <img src="{{ Storage::url($selectedMenu->image) }}" alt="{{ $selectedMenu->name }}" class="w-full h-full object-contain p-4">
+                @php
+                    $item = $isBundleModal ? $selectedBundle : $selectedMenu;
+                @endphp
+                @if($item->image)
+                    <img src="{{ Storage::url($item->image) }}" alt="{{ $item->name }}" class="w-full h-full object-contain p-4">
                 @else
                     <div class="w-full h-full flex items-center justify-center text-gray-400">
                         <svg class="w-12 h-12 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -132,8 +180,19 @@
 
             <!-- Content Area -->
             <div class="p-6 overflow-y-auto flex-1">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ $selectedMenu->name }}</h2>
-                <p class="text-sm text-gray-600 mb-6 leading-relaxed">{{ $selectedMenu->description }}</p>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ $item->name }}</h2>
+                <p class="text-sm text-gray-600 mb-6 leading-relaxed">{{ $item->description }}</p>
+
+                @if($isBundleModal && $item->items)
+                    <div class="mb-4">
+                        <h4 class="font-bold text-sm text-gray-800 mb-2">Isi Paket:</h4>
+                        <ul class="list-disc list-inside text-sm text-gray-600">
+                            @foreach($item->items as $bundleItem)
+                                <li>{{ $bundleItem->quantity }}x {{ $bundleItem->menu->name }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
                 <div class="space-y-4">
                     <div>
@@ -159,7 +218,7 @@
                 <!-- Add Button -->
                 <button wire:click="addToCart" class="flex-grow bg-orange-500 text-white font-bold py-3 px-4 rounded-full shadow-lg hover:bg-orange-600 transition transform active:scale-95 flex justify-between items-center">
                     <span>Tambah</span>
-                    <span>Rp {{ number_format($selectedMenu->price * $quantity, 0, ',', '.') }}</span>
+                    <span>Rp {{ number_format($item->price * $quantity, 0, ',', '.') }}</span>
                 </button>
             </div>
         </div>

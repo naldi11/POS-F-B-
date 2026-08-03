@@ -9,7 +9,7 @@ class OrderPrintController extends Controller
 {
     public function __invoke($id)
     {
-        $order = Order::with(['table', 'orderDetails.menu'])->findOrFail($id);
+        $order = Order::with(['table', 'orderDetails.menu', 'orderDetails.bundle'])->findOrFail($id);
         
         $settingsRaw = \App\Models\Setting::pluck('value', 'key')->toArray();
         $settings = [

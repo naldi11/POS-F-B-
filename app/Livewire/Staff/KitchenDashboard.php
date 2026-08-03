@@ -21,8 +21,8 @@ class KitchenDashboard extends Component
     public function loadOrders()
     {
         // Only load orders that are 'processing'
-        $this->orders = Order::with(['table', 'orderDetails.menu'])
-            ->where('status', 'processing')
+        $this->orders = Order::with(['table', 'orderDetails.menu', 'orderDetails.bundle'])
+            ->whereIn('status', ['cooking', 'verified'])
             ->orderBy('created_at', 'asc')
             ->get();
     }
@@ -37,8 +37,15 @@ class KitchenDashboard extends Component
     public function markAsReady($orderId)
     {
         $order = Order::find($orderId);
-        if ($order) {
+        if ($order && $order->status !== 'completed') {
             $order->update(['status' => 'completed']);
+            
+            if ($order->customer_id && $order->points_earned > 0) {
+                $customer = \App\Models\Customer::find($order->customer_id);
+                if ($customer) {
+                    $customer->increment('points', $order->points_earned);
+                }
+            }
 
             $hasActiveOrders = Order::where('table_id', $order->table_id)
                 ->whereNotIn('status', ['completed', 'cancelled'])

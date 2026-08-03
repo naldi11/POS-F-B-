@@ -88,7 +88,7 @@
             <tbody>
                 @foreach($order->orderDetails as $detail)
                 <tr>
-                    <td class="col-item">{{ $detail->menu->name }}</td>
+                    <td class="col-item">{{ $detail->bundle_id ? $detail->bundle->name . ' (Paket)' : $detail->menu->name }}</td>
                     <td class="col-qty">{{ $detail->quantity }}</td>
                     <td class="col-sub">{{ number_format($detail->subtotal, 0, ',', '.') }}</td>
                 </tr>

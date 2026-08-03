@@ -30,6 +30,14 @@ class Checkout extends Component
     public $appliedPromo = null;
     public $discountAmount = 0;
 
+    public $customerPoints = 0;
+    public $customer_id = null;
+    public $usePoints = false;
+    public $pointsDiscount = 0;
+    
+    public $loyaltyPointsPer1000 = 1;
+    public $loyaltyPointValue = 10;
+
     public function mount()
     {
         if (empty(session()->get('cart'))) {
@@ -39,7 +47,11 @@ class Checkout extends Component
         $this->subtotal = collect($this->cart)->sum(function($item) {
             return $item['price'] * $item['quantity'];
         });
-        $this->total = $this->subtotal;
+        
+        $this->loyaltyPointsPer1000 = \App\Models\Setting::where('key', 'loyalty_points_per_1000_rupiah')->value('value') ?? 1;
+        $this->loyaltyPointValue = \App\Models\Setting::where('key', 'loyalty_point_value')->value('value') ?? 10;
+        
+        $this->calculateTotal();
 
         // Load Table Number from Session
         $this->table_number = session('table_number', '');
@@ -64,6 +76,48 @@ class Checkout extends Component
         'customer_phone' => 'required|string|max:20',
         'payment_proof' => 'required|image|max:51200',
     ];
+
+    public function calculateTotal()
+    {
+        $this->total = $this->subtotal - $this->discountAmount;
+        
+        if ($this->usePoints && $this->customerPoints > 0) {
+            $this->pointsDiscount = $this->customerPoints * $this->loyaltyPointValue;
+            if ($this->pointsDiscount > $this->total) {
+                $this->pointsDiscount = $this->total; // don't exceed total
+            }
+        } else {
+            $this->pointsDiscount = 0;
+        }
+        
+        $this->total -= $this->pointsDiscount;
+    }
+
+    public function checkPoints()
+    {
+        if (empty($this->customer_phone)) {
+            $this->addError('customer_phone', 'Masukkan nomor HP terlebih dahulu.');
+            return;
+        }
+
+        $customer = \App\Models\Customer::where('phone', $this->customer_phone)->first();
+        if ($customer) {
+            $this->customerPoints = $customer->points;
+            $this->customer_id = $customer->id;
+            session()->flash('points_message', 'Anda memiliki ' . number_format($this->customerPoints, 0, ',', '.') . ' Poin.');
+        } else {
+            $this->customerPoints = 0;
+            $this->customer_id = null;
+            session()->flash('points_message', 'Anda belum memiliki poin. Daftar pesanan ini akan memberi Anda poin pertama!');
+        }
+        $this->usePoints = false;
+        $this->calculateTotal();
+    }
+
+    public function togglePoints()
+    {
+        $this->calculateTotal();
+    }
 
     public function applyPromo()
     {
@@ -101,8 +155,8 @@ class Checkout extends Component
             $this->discountAmount = $this->subtotal;
         }
 
-        $this->total = $this->subtotal - $this->discountAmount;
         $this->promoCodeInput = '';
+        $this->calculateTotal();
         session()->flash('promo_message', 'Kode Promo berhasil digunakan!');
     }
 
@@ -110,7 +164,7 @@ class Checkout extends Component
     {
         $this->appliedPromo = null;
         $this->discountAmount = 0;
-        $this->total = $this->subtotal;
+        $this->calculateTotal();
     }
 
     public function processCheckout()
@@ -127,24 +181,45 @@ class Checkout extends Component
             );
             $table->update(['status' => 'occupied']);
 
+            // Find or create customer
+            $customer = \App\Models\Customer::firstOrCreate(
+                ['phone' => $this->customer_phone],
+                ['name' => $this->customer_name, 'points' => 0]
+            );
+
+            // If name is different, update it
+            if ($customer->name !== $this->customer_name) {
+                $customer->update(['name' => $this->customer_name]);
+            }
+
+            $pointsEarned = floor($this->total / 1000) * $this->loyaltyPointsPer1000;
+            $pointsRedeemed = ($this->usePoints && $this->pointsDiscount > 0) ? floor($this->pointsDiscount / $this->loyaltyPointValue) : 0;
+
+            if ($pointsRedeemed > 0) {
+                $customer->decrement('points', $pointsRedeemed);
+            }
+
             $order = Order::create([
                 'table_id' => $table->id,
+                'customer_id' => $customer->id,
                 'customer_name' => $this->customer_name,
                 'customer_phone' => $this->customer_phone,
                 'total_amount' => $this->total,
                 'status' => 'waiting_verification',
                 'promotion_id' => $this->appliedPromo ? $this->appliedPromo->id : null,
-                'discount_amount' => $this->discountAmount
+                'discount_amount' => $this->discountAmount,
+                'points_earned' => $pointsEarned,
+                'points_redeemed' => $pointsRedeemed,
             ]);
 
             // Create Order Details
             foreach ($this->cart as $cartKey => $item) {
-                // Ekstrak menu_id jika cartKey menggunakan format baru {id}_{hash}
-                $fallbackMenuId = is_numeric($cartKey) ? $cartKey : explode('_', $cartKey)[0];
+                $isBundle = $item['is_bundle'] ?? false;
                 
                 OrderDetail::create([
                     'order_id' => $order->id,
-                    'menu_id' => $item['menu_id'] ?? $fallbackMenuId,
+                    'menu_id' => $isBundle ? null : $item['menu_id'],
+                    'bundle_id' => $isBundle ? $item['bundle_id'] : null,
                     'quantity' => $item['quantity'],
                     'notes' => $item['notes'] ?? null
                 ]);
@@ -173,7 +248,7 @@ class Checkout extends Component
 
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'Terjadi kesalahan saat memproses pesanan. Silakan coba lagi.');
+            session()->flash('error', 'Terjadi kesalahan saat memproses pesanan. Silakan coba lagi. ' . $e->getMessage());
         }
     }
 

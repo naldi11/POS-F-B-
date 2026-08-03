@@ -7,64 +7,7 @@ use App\Models\Setting;
 
 class TableManager extends Component
 {
-    public $baseUrl;
     public $newTableNumber = '';
-
-    private function getLocalIp()
-    {
-        $ip = '127.0.0.1'; // default fallback
-        
-        try {
-            if (function_exists('socket_create')) {
-                $sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
-                if ($sock) {
-                    socket_connect($sock, "8.8.8.8", 53);
-                    socket_getsockname($sock, $socketIp);
-                    socket_close($sock);
-                    if ($socketIp) {
-                        $ip = $socketIp;
-                        return $ip;
-                    }
-                }
-            }
-        } catch (\Throwable $e) {
-            // Abaikan error
-        }
-        
-        $fallback = gethostbyname(gethostname());
-        if (filter_var($fallback, FILTER_VALIDATE_IP)) {
-            $ip = $fallback;
-        }
-        
-        return $ip;
-    }
-
-    public function mount()
-    {
-        $currentIp = $this->getLocalIp();
-        $setting = Setting::where('key', 'qr_code_url')->first();
-        
-        if ($setting && !empty($setting->value)) {
-            $this->baseUrl = $setting->value;
-            
-            $parsedHost = parse_url($this->baseUrl, PHP_URL_HOST);
-            
-            if ($parsedHost && (filter_var($parsedHost, FILTER_VALIDATE_IP) || str_ends_with($parsedHost, '.local'))) {
-                if ($parsedHost !== $currentIp && $parsedHost !== '127.0.0.1' && $parsedHost !== 'localhost') {
-                    $this->baseUrl = str_replace($parsedHost, $currentIp, $this->baseUrl);
-                    Setting::updateOrCreate(['key' => 'qr_code_url'], ['value' => $this->baseUrl]);
-                }
-            }
-        } else {
-            $this->baseUrl = "http://{$currentIp}:8000/menu";
-            Setting::updateOrCreate(['key' => 'qr_code_url'], ['value' => $this->baseUrl]);
-        }
-    }
-
-    public function updatedBaseUrl($value)
-    {
-        Setting::updateOrCreate(['key' => 'qr_code_url'], ['value' => $value]);
-    }
 
     public function addTable()
     {

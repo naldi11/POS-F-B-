@@ -15,14 +15,7 @@
     @endif
 
     <!-- Pengaturan URL Base -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Pengaturan Jaringan</h3>
-        <div>
-            <label for="baseUrl" class="block text-sm font-bold text-gray-700 mb-2">URL / IP Tujuan untuk QR Code:</label>
-            <input type="text" id="baseUrl" wire:model.live.debounce.500ms="baseUrl" class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-orange-500 focus:border-orange-500 block p-3 transition" placeholder="http://192.168.1.x:8000/menu">
-            <p class="text-xs text-gray-500 mt-2">Pastikan URL ini dapat diakses oleh HP pelanggan (biasanya menggunakan IP lokal WiFi kafe).</p>
-        </div>
-    </div>
+
 
     <!-- Tambah Meja Baru -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -45,7 +38,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @forelse($tables as $table)
                 @php
-                    $fullUrl = ($baseUrl ?: url('/menu')) . '?table=' . urlencode(trim($table->table_number));
+                    $fullUrl = url('/menu') . '?table=' . urlencode(trim($table->table_number));
                     
                     // Preview SVG
                     $qrSvgPreview = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(120)->margin(1)->generate($fullUrl);

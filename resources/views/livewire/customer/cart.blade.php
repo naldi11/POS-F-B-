@@ -32,7 +32,12 @@
                         @endif
                         
                         <div class="ml-4 flex-grow">
-                            <h3 class="font-semibold text-gray-900 text-sm mb-1">{{ $item['name'] }}</h3>
+                            <h3 class="font-semibold text-gray-900 text-sm mb-1">
+                                {{ $item['name'] }}
+                                @if(isset($item['is_bundle']) && $item['is_bundle'])
+                                    <span class="ml-1 text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-bold">PAKET</span>
+                                @endif
+                            </h3>
                             <p class="text-orange-600 font-bold text-sm mb-1">Rp {{ number_format($item['price'], 0, ',', '.') }}</p>
                             @if(!empty($item['notes']))
                                 <p class="text-xs text-gray-500 italic mb-2 bg-gray-50 p-1.5 rounded-lg border border-gray-100">Catatan: {{ $item['notes'] }}</p>

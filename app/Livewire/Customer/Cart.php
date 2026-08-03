@@ -15,30 +15,30 @@ class Cart extends Component
         $this->cart = session()->get('cart', []);
     }
 
-    public function increase($menuId)
+    public function increase($cartKey)
     {
-        if (isset($this->cart[$menuId])) {
-            $this->cart[$menuId]['quantity']++;
+        if (isset($this->cart[$cartKey])) {
+            $this->cart[$cartKey]['quantity']++;
             session()->put('cart', $this->cart);
         }
     }
 
-    public function decrease($menuId)
+    public function decrease($cartKey)
     {
-        if (isset($this->cart[$menuId])) {
-            if ($this->cart[$menuId]['quantity'] > 1) {
-                $this->cart[$menuId]['quantity']--;
+        if (isset($this->cart[$cartKey])) {
+            if ($this->cart[$cartKey]['quantity'] > 1) {
+                $this->cart[$cartKey]['quantity']--;
             } else {
-                unset($this->cart[$menuId]);
+                unset($this->cart[$cartKey]);
             }
             session()->put('cart', $this->cart);
         }
     }
 
-    public function remove($menuId)
+    public function remove($cartKey)
     {
-        if (isset($this->cart[$menuId])) {
-            unset($this->cart[$menuId]);
+        if (isset($this->cart[$cartKey])) {
+            unset($this->cart[$cartKey]);
             session()->put('cart', $this->cart);
         }
     }

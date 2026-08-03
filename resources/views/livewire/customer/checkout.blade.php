@@ -36,7 +36,12 @@
             </div>
             <div class="pt-3 border-t border-gray-100 flex justify-between items-center">
                 <span class="text-gray-900 font-bold">Total Tagihan</span>
-                <span class="font-bold text-orange-600 text-xl">Rp {{ number_format($total, 0, ',', '.') }}</span>
+                <div class="text-right">
+                    @if($pointsDiscount > 0)
+                        <div class="text-sm text-green-600 font-medium mb-1">- Rp {{ number_format($pointsDiscount, 0, ',', '.') }} (Poin)</div>
+                    @endif
+                    <span class="font-bold text-orange-600 text-xl">Rp {{ number_format($total, 0, ',', '.') }}</span>
+                </div>
             </div>
             
             <div class="mt-4 pt-4 border-t border-gray-100">
@@ -79,10 +84,30 @@
                     <input type="text" id="customer_name" wire:model="customer_name" class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-orange-500 focus:border-orange-500 block p-3 transition" placeholder="Masukkan nama Anda">
                     @error('customer_name') <span class="text-red-500 text-xs italic mt-1 block">{{ $message }}</span> @enderror
                 </div>
-                <div>
-                    <label for="customer_phone" class="block text-gray-900 text-sm font-bold mb-2">No. WhatsApp <span class="text-red-500">*</span></label>
-                    <input type="text" id="customer_phone" wire:model="customer_phone" class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-orange-500 focus:border-orange-500 block p-3 transition" placeholder="Contoh: 08123456789">
+                <div class="flex flex-col gap-2 relative">
+                    <label for="customer_phone" class="block text-gray-900 text-sm font-bold">No. WhatsApp <span class="text-red-500">*</span></label>
+                    <div class="flex gap-2">
+                        <input type="text" id="customer_phone" wire:model.defer="customer_phone" class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-orange-500 focus:border-orange-500 block p-3 transition" placeholder="Contoh: 08123456789">
+                        <button type="button" wire:click="checkPoints" class="px-4 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 font-bold rounded-xl text-sm whitespace-nowrap transition-colors">Cek Poin</button>
+                    </div>
                     @error('customer_phone') <span class="text-red-500 text-xs italic mt-1 block">{{ $message }}</span> @enderror
+                    
+                    @if(session()->has('points_message'))
+                        <div class="text-xs {{ $customerPoints > 0 ? 'text-green-600' : 'text-gray-500' }} mt-1 flex items-start gap-1 font-medium bg-gray-50 p-2 rounded-lg border border-gray-200">
+                            <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>{{ session('points_message') }}</span>
+                        </div>
+                    @endif
+
+                    @if($customerPoints > 0)
+                        <div class="mt-2 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center justify-between">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" wire:model.live="usePoints" wire:change="togglePoints" class="form-checkbox h-5 w-5 text-orange-600 rounded focus:ring-orange-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700 font-medium">Gunakan semua poin</span>
+                            </label>
+                            <span class="text-green-700 font-bold text-sm">- Rp {{ number_format(min($customerPoints * $loyaltyPointValue, $total + $pointsDiscount), 0, ',', '.') }}</span>
+                        </div>
+                    @endif
                 </div>
             </div>
 

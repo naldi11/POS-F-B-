@@ -23,7 +23,7 @@ class CashierDashboard extends Component
     #[\Livewire\Attributes\Computed]
     public function orders()
     {
-        $query = Order::with(['table', 'payment', 'orderDetails.menu']);
+        $query = Order::with(['table', 'payment', 'orderDetails.menu', 'orderDetails.bundle']);
 
         // Tab Filter
         if ($this->tab === 'completed') {
@@ -99,9 +99,17 @@ class CashierDashboard extends Component
     public function completeOrder($orderId)
     {
         $order = Order::find($orderId);
-        if ($order) {
+        if ($order && $order->status !== 'completed') {
             $order->update(['status' => 'completed']);
             $this->syncTableStatus($order->table_id);
+            
+            if ($order->customer_id && $order->points_earned > 0) {
+                $customer = \App\Models\Customer::find($order->customer_id);
+                if ($customer) {
+                    $customer->increment('points', $order->points_earned);
+                }
+            }
+
             \App\Events\OrderUpdated::dispatch($order);
             unset($this->orders);
         }
@@ -110,9 +118,26 @@ class CashierDashboard extends Component
     public function updateOrderStatus($orderId, $status)
     {
         $order = Order::find($orderId);
-        if ($order) {
+        if ($order && $order->status !== $status) {
+            $oldStatus = $order->status;
             $order->update(['status' => $status]);
             $this->syncTableStatus($order->table_id);
+            
+            // If it was completed, and now reverted, deduct the points
+            if ($oldStatus === 'completed' && $order->customer_id && $order->points_earned > 0) {
+                $customer = \App\Models\Customer::find($order->customer_id);
+                if ($customer) {
+                    $customer->decrement('points', $order->points_earned);
+                }
+            }
+            // If it wasn't completed, and now is completed, add the points
+            else if ($status === 'completed' && $order->customer_id && $order->points_earned > 0) {
+                $customer = \App\Models\Customer::find($order->customer_id);
+                if ($customer) {
+                    $customer->increment('points', $order->points_earned);
+                }
+            }
+
             \App\Events\OrderUpdated::dispatch($order);
             unset($this->orders);
         }

@@ -4,17 +4,27 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['table_id', 'customer_name', 'customer_phone', 'total_amount', 'status', 'promotion_id', 'discount_amount'])]
 class Order extends Model
 {
+    protected $fillable = [
+        'table_id', 'customer_name', 'customer_phone', 'customer_id',
+        'total_amount', 'status',
+        'points_earned', 'points_redeemed',
+        'promotion_id', 'discount_amount'
+    ];
+
     public function promotion(): BelongsTo
     {
         return $this->belongsTo(Promotion::class);
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
     }
     public function table(): BelongsTo
     {

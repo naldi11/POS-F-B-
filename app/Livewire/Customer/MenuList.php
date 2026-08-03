@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Menu;
 use App\Models\Category;
 use App\Models\Table;
+use App\Models\Bundle;
 use Livewire\Attributes\Layout;
 
 #[Layout('layouts.customer')]
@@ -17,9 +18,11 @@ class MenuList extends Component
     
     // Modal state
     public $selectedMenu = null;
+    public $selectedBundle = null;
     public $quantity = 1;
     public $notes = '';
     public $showModal = false;
+    public $isBundleModal = false;
 
     public function mount()
     {
@@ -42,9 +45,23 @@ class MenuList extends Component
         if ($this->selectedMenu && $this->selectedMenu->is_available) {
             $this->quantity = 1;
             $this->notes = '';
+            $this->isBundleModal = false;
             $this->showModal = true;
         } else {
             session()->flash('error', 'Menu ini sedang tidak tersedia.');
+        }
+    }
+
+    public function openBundleDetail($bundleId)
+    {
+        $this->selectedBundle = Bundle::with('items.menu')->find($bundleId);
+        if ($this->selectedBundle && $this->selectedBundle->is_active) {
+            $this->quantity = 1;
+            $this->notes = '';
+            $this->isBundleModal = true;
+            $this->showModal = true;
+        } else {
+            session()->flash('error', 'Paket ini sedang tidak tersedia.');
         }
     }
 
@@ -52,6 +69,8 @@ class MenuList extends Component
     {
         $this->showModal = false;
         $this->selectedMenu = null;
+        $this->selectedBundle = null;
+        $this->isBundleModal = false;
     }
 
     public function incrementQuantity()
@@ -68,33 +87,60 @@ class MenuList extends Component
 
     public function addToCart()
     {
-        if (!$this->selectedMenu || !$this->selectedMenu->is_available) {
-            session()->flash('error', 'Menu ini sedang tidak tersedia.');
-            return;
-        }
-
         $cart = session()->get('cart', []);
         
-        // Generate a unique key based on menu ID and notes (so different notes = different items)
-        $notesHash = md5(trim($this->notes));
-        $cartKey = $this->selectedMenu->id . '_' . $notesHash;
+        if ($this->isBundleModal) {
+            if (!$this->selectedBundle || !$this->selectedBundle->is_active) {
+                session()->flash('error', 'Paket ini sedang tidak tersedia.');
+                return;
+            }
 
-        if (isset($cart[$cartKey])) {
-            $cart[$cartKey]['quantity'] += $this->quantity;
+            $notesHash = md5(trim($this->notes));
+            $cartKey = 'bundle_' . $this->selectedBundle->id . '_' . $notesHash;
+
+            if (isset($cart[$cartKey])) {
+                $cart[$cartKey]['quantity'] += $this->quantity;
+            } else {
+                $cart[$cartKey] = [
+                    'bundle_id' => $this->selectedBundle->id,
+                    'name' => $this->selectedBundle->name,
+                    'price' => $this->selectedBundle->price,
+                    'quantity' => $this->quantity,
+                    'image' => $this->selectedBundle->image,
+                    'notes' => trim($this->notes),
+                    'is_bundle' => true
+                ];
+            }
+            $name = $this->selectedBundle->name;
+
         } else {
-            $cart[$cartKey] = [
-                'menu_id' => $this->selectedMenu->id,
-                'name' => $this->selectedMenu->name,
-                'price' => $this->selectedMenu->price,
-                'quantity' => $this->quantity,
-                'image' => $this->selectedMenu->image,
-                'notes' => trim($this->notes)
-            ];
+            if (!$this->selectedMenu || !$this->selectedMenu->is_available) {
+                session()->flash('error', 'Menu ini sedang tidak tersedia.');
+                return;
+            }
+
+            $notesHash = md5(trim($this->notes));
+            $cartKey = $this->selectedMenu->id . '_' . $notesHash;
+
+            if (isset($cart[$cartKey])) {
+                $cart[$cartKey]['quantity'] += $this->quantity;
+            } else {
+                $cart[$cartKey] = [
+                    'menu_id' => $this->selectedMenu->id,
+                    'name' => $this->selectedMenu->name,
+                    'price' => $this->selectedMenu->price,
+                    'quantity' => $this->quantity,
+                    'image' => $this->selectedMenu->image,
+                    'notes' => trim($this->notes),
+                    'is_bundle' => false
+                ];
+            }
+            $name = $this->selectedMenu->name;
         }
 
         session()->put('cart', $cart);
         $this->dispatch('cartUpdated');
-        session()->flash('message', $this->selectedMenu->name . ' ditambahkan ke keranjang!');
+        session()->flash('message', $name . ' ditambahkan ke keranjang!');
         
         $this->closeDetail();
     }
@@ -107,8 +153,14 @@ class MenuList extends Component
             $query->where('category_id', $this->selectedCategory);
         }
 
+        $bundles = collect();
+        if (!$this->selectedCategory) {
+            $bundles = Bundle::where('is_active', true)->with('items.menu')->get();
+        }
+
         return view('livewire.customer.menu-list', [
             'menus' => $query->get(),
+            'bundles' => $bundles,
             'cartCount' => collect(session()->get('cart', []))->sum('quantity')
         ]);
     }

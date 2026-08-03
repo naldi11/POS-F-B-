@@ -59,7 +59,7 @@ new #[Layout('layouts.customer')] class extends Component {
         <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-yellow-500 rounded-full mix-blend-multiply filter blur-[100px] opacity-20"></div>
     </div>
 
-    <div class="relative z-10 w-full max-w-md px-6 flex flex-col items-center">
+    <div class="relative z-10 w-full max-w-md px-6 flex flex-col items-center mt-12">
         
         <!-- Welcome Text -->
         <div class="text-center mb-10 transform transition-all translate-y-0 opacity-100" style="animation: fade-in-up 1s ease-out;">
@@ -84,6 +84,12 @@ new #[Layout('layouts.customer')] class extends Component {
 
             <!-- QR Scanner Container -->
             <div class="relative rounded-2xl overflow-hidden bg-gray-900 border border-white/10 aspect-square shadow-inner">
+                <!-- Loading Skeleton -->
+                <div id="scanner-loader" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-20">
+                    <div class="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p class="text-orange-400 text-sm font-medium animate-pulse">Menyiapkan Kamera...</p>
+                </div>
+
                 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
                 <div id="reader" class="absolute inset-0 w-full h-full border-none bg-black"></div>
                 
@@ -139,6 +145,9 @@ new #[Layout('layouts.customer')] class extends Component {
                         },
                         () => {}
                     );
+                    
+                    // Hide loader when camera successfully starts
+                    document.getElementById('scanner-loader').classList.add('hidden');
                 }
 
                 async function initScanner() {

@@ -20,29 +20,81 @@
             
             <div class="p-5">
                 <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-100">
-                    <span class="text-gray-500 text-sm">Status Pesanan</span>
-                    @php
-                        $statusColors = [
-                            'waiting_payment' => 'bg-yellow-100 text-yellow-800',
-                            'waiting_verification' => 'bg-orange-100 text-orange-800',
-                            'verified' => 'bg-blue-100 text-blue-800',
-                            'cooking' => 'bg-purple-100 text-purple-800',
-                            'ready' => 'bg-green-100 text-green-800',
-                            'completed' => 'bg-gray-100 text-gray-800',
-                        ];
-                        $statusLabels = [
-                            'waiting_payment' => 'Menunggu Pembayaran',
-                            'waiting_verification' => 'Pending (Menunggu Verifikasi)',
-                            'verified' => 'Pesanan Diterima',
-                            'cooking' => 'Sedang Dimasak',
-                            'ready' => 'Siap Disajikan',
-                            'completed' => 'Selesai',
-                        ];
-                    @endphp
-                    <span class="px-3 py-1 text-xs font-bold rounded-full {{ $statusColors[$order->status] }}">
-                        {{ $statusLabels[$order->status] }}
-                    </span>
+                    <span class="text-gray-500 text-sm font-bold">Status Pesanan</span>
                 </div>
+                
+                <!-- Tracking Timeline (GoFood/ShopeeFood Style) -->
+                <div class="mb-8 px-2 relative" x-data="{ 
+                    playNotification() {
+                        try {
+                            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                            const oscillator = audioCtx.createOscillator();
+                            const gainNode = audioCtx.createGain();
+                            oscillator.connect(gainNode);
+                            gainNode.connect(audioCtx.destination);
+                            oscillator.type = 'sine';
+                            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+                            oscillator.frequency.setValueAtTime(1108.73, audioCtx.currentTime + 0.1); // C#6
+                            gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+                            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                            oscillator.start(audioCtx.currentTime);
+                            oscillator.stop(audioCtx.currentTime + 0.5);
+                            
+                            // Show toast
+                            let toast = document.createElement('div');
+                            toast.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-orange-600 text-white px-6 py-3 rounded-full shadow-2xl z-50 font-bold transition-all';
+                            toast.innerHTML = '🔔 Status pesanan Anda diperbarui!';
+                            document.body.appendChild(toast);
+                            setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 500); }, 3000);
+                        } catch(e) {}
+                    }
+                }"
+                @order-updated.window="playNotification()">
+                    @php
+                        $steps = [
+                            'waiting_verification' => ['label' => 'Menunggu Verifikasi', 'desc' => 'Kasir sedang memeriksa pesanan'],
+                            'verified' => ['label' => 'Pesanan Diterima', 'desc' => 'Pesanan Anda sudah masuk antrean'],
+                            'cooking' => ['label' => 'Sedang Dimasak', 'desc' => 'Koki sedang menyiapkan pesanan Anda'],
+                            'ready' => ['label' => 'Siap Disajikan', 'desc' => 'Pesanan siap diantar ke meja Anda'],
+                            'completed' => ['label' => 'Selesai', 'desc' => 'Selamat menikmati hidangan!'],
+                        ];
+                        $stepKeys = array_keys($steps);
+                        $currentIndex = array_search($order->status, $stepKeys);
+                        if ($currentIndex === false && $order->status === 'waiting_payment') $currentIndex = -1;
+                    @endphp
+
+                    <div class="relative border-l-2 border-gray-200 ml-3 md:ml-4 space-y-6">
+                        @foreach($steps as $key => $step)
+                            @php
+                                $index = array_search($key, $stepKeys);
+                                $isPast = $index < $currentIndex;
+                                $isCurrent = $index === $currentIndex;
+                                $isFuture = $index > $currentIndex;
+                            @endphp
+                            <div class="relative pl-6">
+                                <!-- Bullet -->
+                                <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 bg-white flex items-center justify-center transition-all duration-500
+                                    {{ $isPast ? 'border-orange-500 bg-orange-500' : '' }}
+                                    {{ $isCurrent ? 'border-orange-500 ring-4 ring-orange-100 bg-white' : '' }}
+                                    {{ $isFuture ? 'border-gray-300' : '' }}">
+                                    @if($isCurrent)
+                                        <div class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                                    @elseif($isPast)
+                                        <svg class="w-2 h-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                    @endif
+                                </div>
+                                <!-- Text -->
+                                <div>
+                                    <h4 class="font-bold text-sm {{ $isPast || $isCurrent ? 'text-gray-900' : 'text-gray-400' }}">{{ $step['label'] }}</h4>
+                                    <p class="text-xs mt-0.5 {{ $isCurrent ? 'text-orange-600 font-medium' : 'text-gray-400' }}">{{ $step['desc'] }}</p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-100">
+                    <h3 class="font-bold text-gray-900 mb-3 text-sm">Informasi Meja</h3>
                 
                 <div class="space-y-3 mb-6">
                     <div class="flex justify-between items-center">
@@ -208,7 +260,15 @@
                 <div class="w-2 h-2 bg-orange-600 rounded-full"></div>
                 <span class="text-xs font-bold">Menunggu update...</span>
             </div>
-        </div>
         @endif
+        
+        <script>
+            // Dispatch browser event when Livewire OrderUpdated event is received via Echo
+            document.addEventListener('livewire:initialized', () => {
+                Livewire.on('echo:orders,OrderUpdated', (event) => {
+                    window.dispatchEvent(new CustomEvent('order-updated'));
+                });
+            });
+        </script>
     </div>
 </div>

@@ -16,6 +16,7 @@ class BundleManager extends Component
     public $name, $description, $price, $image, $is_active = true;
     public $bundleId;
     public $isModalOpen = false;
+    public $remove_existing_image = false;
     public $bundleItems = [];
     public $availableMenus = [];
 
@@ -67,8 +68,15 @@ class BundleManager extends Component
         $this->image = null;
         $this->is_active = true;
         $this->bundleId = null;
+        $this->remove_existing_image = false;
         $this->bundleItems = [];
         $this->addBundleItem();
+    }
+
+    public function removeImage()
+    {
+        $this->image = null;
+        $this->remove_existing_image = true;
     }
 
     public function addBundleItem()
@@ -87,6 +95,13 @@ class BundleManager extends Component
         $this->validate();
 
         $imagePath = $this->bundleId ? Bundle::find($this->bundleId)->image : null;
+
+        if ($this->remove_existing_image && !$this->image) {
+            if ($imagePath && Storage::disk('public')->exists($imagePath)) {
+                Storage::disk('public')->delete($imagePath);
+            }
+            $imagePath = null;
+        }
 
         if ($this->image) {
             if ($imagePath && Storage::disk('public')->exists($imagePath)) {
@@ -128,6 +143,7 @@ class BundleManager extends Component
         $this->price = $bundle->price;
         $this->is_active = $bundle->is_active;
         $this->image = null;
+        $this->remove_existing_image = false;
         
         $this->bundleItems = $bundle->items->map(function ($item) {
             return [

@@ -144,22 +144,48 @@
                         <!-- Image -->
                         <div class="sm:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Gambar Paket</label>
-                            <div class="flex items-center gap-4">
-                                <div class="shrink-0">
-                                    @if ($image)
-                                        <img src="{{ $image->temporaryUrl() }}" class="h-20 w-20 object-cover rounded-xl border border-gray-200">
-                                    @elseif ($bundleId && \App\Models\Bundle::find($bundleId)->image)
-                                        <img src="{{ Storage::url(\App\Models\Bundle::find($bundleId)->image) }}" class="h-20 w-20 object-cover rounded-xl border border-gray-200">
-                                    @else
-                                        <div class="h-20 w-20 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400">
-                                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                        </div>
-                                    @endif
-                                </div>
-                                <div>
-                                    <input type="file" wire:model="image" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 transition-colors cursor-pointer" accept="image/*">
-                                    <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 2MB</p>
-                                </div>
+                            
+                            <label for="bundle-image"
+                                x-data="{ isDropping: false }"
+                                x-on:dragover.prevent="isDropping = true"
+                                x-on:dragleave.prevent="isDropping = false"
+                                x-on:drop.prevent="
+                                    isDropping = false; 
+                                    if ($event.dataTransfer.files.length > 0) {
+                                        $refs.fileInput.files = $event.dataTransfer.files;
+                                        $refs.fileInput.dispatchEvent(new Event('change'));
+                                    }
+                                "
+                                x-bind:class="isDropping ? 'border-orange-500 bg-orange-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'"
+                                class="relative flex flex-col items-center justify-center w-full min-h-[12rem] p-4 border-2 border-dashed rounded-xl cursor-pointer transition overflow-hidden block">
+                                
+                                @if ($image)
+                                    <div class="relative w-full h-40">
+                                        <img src="{{ $image->temporaryUrl() }}" class="w-full h-full object-contain rounded-lg">
+                                        <button type="button" wire:click.prevent="removeImage" onclick="event.preventDefault()" class="absolute top-2 right-2 z-20 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition shadow-lg" title="Hapus Gambar">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        </button>
+                                    </div>
+                                @elseif ($bundleId && !$remove_existing_image && \App\Models\Bundle::find($bundleId)->image)
+                                    <div class="relative w-full h-40">
+                                        <img src="{{ Storage::url(\App\Models\Bundle::find($bundleId)->image) }}" class="w-full h-full object-contain rounded-lg">
+                                        <button type="button" wire:click.prevent="removeImage" onclick="event.preventDefault()" class="absolute top-2 right-2 z-20 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition shadow-lg" title="Hapus Gambar">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        </button>
+                                    </div>
+                                @else
+                                    <div class="flex flex-col items-center justify-center pt-5 pb-6 pointer-events-none">
+                                        <svg class="w-12 h-12 mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                        <p class="text-sm text-gray-600 font-semibold mb-1">Unggah Gambar Paket</p>
+                                        <p class="text-xs text-gray-500">Klik atau Drag & Drop (Max. 2MB)</p>
+                                    </div>
+                                @endif
+                                <input id="bundle-image" x-ref="fileInput" type="file" wire:model="image" class="sr-only" accept="image/*">
+                            </label>
+                            
+                            <div wire:loading wire:target="image" class="text-xs text-orange-500 mt-2 flex items-center gap-1 animate-pulse">
+                                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                Mengunggah gambar...
                             </div>
                             @error('image') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>

@@ -17,6 +17,7 @@ class BundleManager extends Component
     public $bundleId;
     public $isModalOpen = false;
     public $remove_existing_image = false;
+    public $remoteImageUrl = null;
     public $bundleItems = [];
     public $availableMenus = [];
 
@@ -69,13 +70,24 @@ class BundleManager extends Component
         $this->is_active = true;
         $this->bundleId = null;
         $this->remove_existing_image = false;
+        $this->remoteImageUrl = null;
         $this->bundleItems = [];
         $this->addBundleItem();
+    }
+
+    public function handleRemoteImage($url)
+    {
+        if (filter_var($url, FILTER_VALIDATE_URL) || str_starts_with($url, 'data:image')) {
+            $this->remoteImageUrl = $url;
+            $this->image = null;
+            $this->remove_existing_image = true;
+        }
     }
 
     public function removeImage()
     {
         $this->image = null;
+        $this->remoteImageUrl = null;
         $this->remove_existing_image = true;
     }
 
@@ -96,7 +108,7 @@ class BundleManager extends Component
 
         $imagePath = $this->bundleId ? Bundle::find($this->bundleId)->image : null;
 
-        if ($this->remove_existing_image && !$this->image) {
+        if ($this->remove_existing_image && !$this->image && !$this->remoteImageUrl) {
             if ($imagePath && Storage::disk('public')->exists($imagePath)) {
                 Storage::disk('public')->delete($imagePath);
             }
@@ -108,6 +120,28 @@ class BundleManager extends Component
                 Storage::disk('public')->delete($imagePath);
             }
             $imagePath = $this->image->store('bundles', 'public');
+        } elseif ($this->remoteImageUrl) {
+            try {
+                $contents = null;
+                if (str_starts_with($this->remoteImageUrl, 'data:image')) {
+                    $parts = explode(',', $this->remoteImageUrl);
+                    if (count($parts) === 2) {
+                        $contents = base64_decode($parts[1]);
+                    }
+                } else {
+                    $context = stream_context_create(['http' => ['header' => "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n"]]);
+                    $contents = @file_get_contents($this->remoteImageUrl, false, $context);
+                }
+
+                if ($contents) {
+                    if ($imagePath && Storage::disk('public')->exists($imagePath)) {
+                        Storage::disk('public')->delete($imagePath);
+                    }
+                    $filename = 'bundles/' . uniqid() . '.jpg';
+                    Storage::disk('public')->put($filename, $contents);
+                    $imagePath = $filename;
+                }
+            } catch (\Exception $e) {}
         }
 
         $bundle = Bundle::updateOrCreate(
@@ -143,6 +177,7 @@ class BundleManager extends Component
         $this->price = $bundle->price;
         $this->is_active = $bundle->is_active;
         $this->image = null;
+        $this->remoteImageUrl = null;
         $this->remove_existing_image = false;
         
         $this->bundleItems = $bundle->items->map(function ($item) {

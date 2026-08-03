@@ -153,6 +153,19 @@
                                     isDropping = false; 
                                     if ($event.dataTransfer.files.length > 0) {
                                         $wire.upload('image', $event.dataTransfer.files[0]);
+                                    } else {
+                                        let html = $event.dataTransfer.getData('text/html');
+                                        let url = $event.dataTransfer.getData('text/uri-list') || $event.dataTransfer.getData('text/plain');
+                                        if (html) {
+                                            let div = document.createElement('div');
+                                            div.innerHTML = html;
+                                            let img = div.querySelector('img');
+                                            if (img && img.src) {
+                                                $wire.handleRemoteImage(img.src);
+                                            }
+                                        } else if (url && (url.startsWith('http') || url.startsWith('data:image'))) {
+                                            $wire.handleRemoteImage(url);
+                                        }
                                     }
                                 "
                                 @paste.window="
@@ -166,6 +179,13 @@
                                 @if ($image)
                                     <div class="relative w-full h-40">
                                         <img src="{{ $image->temporaryUrl() }}" class="w-full h-full object-contain rounded-lg">
+                                        <button type="button" @click.stop.prevent="$wire.removeImage()" class="absolute top-2 right-2 z-20 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition shadow-lg" title="Hapus Gambar">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        </button>
+                                    </div>
+                                @elseif ($remoteImageUrl)
+                                    <div class="relative w-full h-40">
+                                        <img src="{{ $remoteImageUrl }}" class="w-full h-full object-contain rounded-lg">
                                         <button type="button" @click.stop.prevent="$wire.removeImage()" class="absolute top-2 right-2 z-20 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition shadow-lg" title="Hapus Gambar">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                         </button>

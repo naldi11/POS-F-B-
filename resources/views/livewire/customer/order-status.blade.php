@@ -42,10 +42,10 @@
                             
                             // Show toast
                             let toast = document.createElement('div');
-                            toast.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-orange-600 text-white px-6 py-3 rounded-full shadow-2xl z-50 font-bold transition-all';
+                            toast.style.cssText = 'position: fixed; top: 16px; left: 50%; transform: translateX(-50%); background-color: #ef4444; color: white; padding: 12px 24px; border-radius: 9999px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); z-index: 9999; font-weight: bold; transition: opacity 0.5s; width: max-content; font-family: sans-serif; font-size: 14px; text-align: center;';
                             toast.innerHTML = '🔔 Status pesanan Anda diperbarui!';
                             document.body.appendChild(toast);
-                            setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 500); }, 3000);
+                            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
                         } catch(e) {}
                     }
                 }"
@@ -71,7 +71,7 @@
                                 $isCurrent = $index === $currentIndex;
                                 $isFuture = $index > $currentIndex;
                             @endphp
-                            <div class="relative pl-6">
+                            <div class="relative" style="padding-left: 32px; min-height: 24px;">
                                 <!-- Bullet -->
                                 <div class="absolute rounded-full border-2 bg-white flex items-center justify-center transition-all duration-500
                                     {{ $isPast ? 'border-orange-500 bg-orange-500' : '' }}

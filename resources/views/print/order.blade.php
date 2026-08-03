@@ -121,9 +121,44 @@
             <div>Silakan Berikan Struk Ini Ke Dapur</div>
         </div>
         
-        <div class="text-center mt-4 no-print">
-            <button onclick="window.print()" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">Print Ulang</button>
-            <button onclick="window.close()" style="padding: 10px 20px; font-size: 16px; cursor: pointer; margin-left: 10px;">Tutup</button>
+        <div class="text-center mt-4 no-print" style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+            <button onclick="window.print()" style="
+                background-color: #f97316;
+                color: #ffffff;
+                border: none;
+                padding: 12px 24px;
+                font-size: 14px;
+                font-weight: bold;
+                border-radius: 8px;
+                cursor: pointer;
+                box-shadow: 0 4px 6px rgba(249, 115, 22, 0.2);
+                transition: background-color 0.2s, transform 0.1s;
+                font-family: inherit;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            " onmouseover="this.style.backgroundColor='#ea580c'" onmouseout="this.style.backgroundColor='#f97316'" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                Print Ulang
+            </button>
+            <button onclick="window.close()" style="
+                background-color: #f1f5f9;
+                color: #334155;
+                border: 1px solid #cbd5e1;
+                padding: 12px 24px;
+                font-size: 14px;
+                font-weight: bold;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background-color 0.2s, transform 0.1s;
+                font-family: inherit;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            " onmouseover="this.style.backgroundColor='#e2e8f0'" onmouseout="this.style.backgroundColor='#f1f5f9'" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                Tutup
+            </button>
         </div>
     </div>
 

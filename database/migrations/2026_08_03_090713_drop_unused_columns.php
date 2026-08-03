@@ -25,8 +25,7 @@ return new class extends Migration
 
         Schema::table('payments', function (Blueprint $table) {
             if (Schema::hasColumn('payments', 'verified_by')) {
-                // The foreign key was already dropped in a previous partial execution, 
-                // so we only need to drop the column now.
+                $table->dropForeign(['verified_by']);
                 $table->dropColumn('verified_by');
             }
         });

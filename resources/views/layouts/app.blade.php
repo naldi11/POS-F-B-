@@ -103,6 +103,26 @@
                             </ul>
                         </div>
                         @endif
+
+                        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'marketing')
+                        <div>
+                            <h3 class="mb-4 ml-4 mt-6 text-xs font-bold tracking-wider text-orange-200/80">MARKETING</h3>
+                            <ul class="mb-6 flex flex-col gap-1.5">
+                                <li>
+                                    <a href="{{ route('marketing.dashboard') }}" wire:navigate class="group relative flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-orange-50 duration-300 ease-in-out hover:bg-orange-700/80 hover:text-white {{ request()->routeIs('marketing.dashboard') ? 'bg-orange-700 text-white shadow-inner' : '' }}">
+                                        <svg class="w-5 h-5 {{ request()->routeIs('marketing.dashboard') ? 'text-white' : 'text-orange-200 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                                        Dashboard Promo
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('marketing.promotions') }}" wire:navigate class="group relative flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-orange-50 duration-300 ease-in-out hover:bg-orange-700/80 hover:text-white {{ request()->routeIs('marketing.promotions') ? 'bg-orange-700 text-white shadow-inner' : '' }}">
+                                        <svg class="w-5 h-5 {{ request()->routeIs('marketing.promotions') ? 'text-white' : 'text-orange-200 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        Manajemen Promo
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        @endif
                     </nav>
                 </div>
             </aside>

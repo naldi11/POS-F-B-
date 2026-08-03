@@ -83,20 +83,31 @@ new #[Layout('layouts.customer')] class extends Component {
             @endif
 
             <!-- QR Scanner Container -->
-            <div class="relative rounded-2xl overflow-hidden bg-gray-900/50 border border-white/10 aspect-square flex items-center justify-center">
+            <div class="relative rounded-2xl overflow-hidden bg-gray-900 border border-white/10 aspect-square shadow-inner">
                 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-                <div id="reader" class="w-full h-full [&_video]:object-cover [&_video]:w-full [&_video]:h-full border-none"></div>
+                <div id="reader" class="absolute inset-0 w-full h-full border-none bg-black"></div>
                 
+                <!-- Overlay Switch Camera Button Container -->
+                <div id="camera-controls" class="absolute bottom-4 inset-x-0 flex justify-center z-20 pointer-events-none hidden">
+                    <!-- Button will be injected here -->
+                </div>
+                
+                <!-- Scanning animation overlay -->
+                <div class="absolute inset-0 pointer-events-none z-10 border-2 border-orange-500/30 rounded-2xl">
+                    <div class="w-full h-1 bg-orange-500 shadow-[0_0_15px_#f97316] animate-[scan_2s_ease-in-out_infinite]"></div>
+                </div>
+
                 <style>
-                    /* Customizing html5-qrcode UI */
-                    #reader__dashboard_section_csr span, 
-                    #reader__dashboard_section_csr a { color: #facc15 !important; }
-                    #reader__dashboard_section_swaplink { color: #fb923c !important; font-weight: bold; }
-                    #reader__camera_selection { background: #374151; color: white; border-radius: 0.5rem; padding: 0.5rem; margin-bottom: 0.5rem; border: none; width: 100%; max-width: 250px;}
-                    #reader__dashboard_section_csr button { background: #f97316; color: white; border: none; padding: 0.5rem 1rem; border-radius: 9999px; font-weight: bold; cursor: pointer; transition: 0.2s;}
-                    #reader__dashboard_section_csr button:hover { background: #ea580c; }
+                    @keyframes scan {
+                        0%, 100% { transform: translateY(0); }
+                        50% { transform: translateY(calc(100cqw - 4px)); }
+                    }
+                    /* Customizing html5-qrcode UI to be invisible */
+                    #reader__dashboard_section_csr { display: none !important; }
+                    #reader__dashboard_section_swaplink { display: none !important; }
                     #reader { border: none !important; }
-                    #reader img { display: none !important; } /* Hide the default logo if any */
+                    #reader img { display: none !important; }
+                    #reader video { object-fit: cover !important; width: 100% !important; height: 100% !important; }
                 </style>
             </div>
 
@@ -115,7 +126,7 @@ new #[Layout('layouts.customer')] class extends Component {
                     }
                     await html5Qrcode.start(
                         cameraId,
-                        { fps: 10, qrbox: { width: 250, height: 250 } },
+                        { fps: 15, qrbox: { width: 280, height: 280 } },
                         (decodedText) => {
                             html5Qrcode.stop();
                             try {
@@ -134,23 +145,25 @@ new #[Layout('layouts.customer')] class extends Component {
                     try {
                         cameras = await Html5Qrcode.getCameras();
                         if (!cameras || cameras.length === 0) {
-                            document.getElementById('reader').innerHTML = '<p style="color:#f97316;text-align:center;padding:1rem;">Kamera tidak ditemukan.</p>';
+                            document.getElementById('reader').innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-orange-400 font-medium">Kamera tidak ditemukan.</div>';
                             return;
                         }
-                        // Default ke kamera belakang jika tersedia
+                        
                         currentCameraIndex = cameras.length > 1 ? 1 : 0;
                         await startScanner(cameras[currentCameraIndex].id);
 
-                        // Tambahkan tombol switch kamera jika ada lebih dari 1
                         if (cameras.length > 1) {
+                            const controls = document.getElementById('camera-controls');
+                            controls.classList.remove('hidden');
+                            
                             const btn = document.createElement('button');
-                            btn.textContent = '🔄 Ganti Kamera';
-                            btn.style.cssText = 'margin-top:10px;width:100%;background:#f97316;color:white;border:none;padding:8px 16px;border-radius:9999px;font-weight:bold;cursor:pointer;transition:0.2s;';
+                            btn.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Ganti Kamera`;
+                            btn.className = "flex items-center px-5 py-2.5 bg-gray-900/80 hover:bg-gray-800 text-white text-sm font-semibold rounded-full backdrop-blur-md border border-white/10 shadow-xl pointer-events-auto transition-transform active:scale-95";
                             btn.addEventListener('click', async () => {
                                 currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
                                 await startScanner(cameras[currentCameraIndex].id);
                             });
-                            document.getElementById('reader').after(btn);
+                            controls.appendChild(btn);
                         }
                     } catch (err) {
                         console.error('Camera init error:', err);

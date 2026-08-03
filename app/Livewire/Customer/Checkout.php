@@ -138,6 +138,11 @@ class Checkout extends Component
             return;
         }
 
+        if (!is_null($promo->max_uses) && $promo->used_count >= $promo->max_uses) {
+            $this->addError('promoCodeInput', 'Mohon maaf, kuota penggunaan kode promo ini sudah habis.');
+            return;
+        }
+
         if ($this->subtotal < $promo->min_purchase) {
             $this->addError('promoCodeInput', 'Minimal pembelian untuk promo ini adalah Rp ' . number_format($promo->min_purchase, 0, ',', '.'));
             return;
@@ -174,6 +179,19 @@ class Checkout extends Component
         DB::beginTransaction();
 
         try {
+            // Re-validate and lock promo if applied
+            if ($this->appliedPromo) {
+                $promo = \App\Models\Promotion::where('id', $this->appliedPromo->id)->lockForUpdate()->first();
+                if (!$promo || (!is_null($promo->max_uses) && $promo->used_count >= $promo->max_uses)) {
+                    DB::rollBack();
+                    $this->removePromo();
+                    $this->addError('promoCodeInput', 'Mohon maaf, kuota promo baru saja habis. Silakan checkout ulang tanpa promo.');
+                    return;
+                }
+                // Increment usage
+                $promo->increment('used_count');
+            }
+
             // Find or create table
             $table = \App\Models\Table::firstOrCreate(
                 ['table_number' => $this->table_number],

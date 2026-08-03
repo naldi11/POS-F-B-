@@ -46,6 +46,12 @@
                             @error('min_purchase') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Batas Kuota Penggunaan (Opsional)</label>
+                            <input type="number" wire:model="max_uses" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" placeholder="Biarkan kosong jika tanpa batas (Unlimited)">
+                            @error('max_uses') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                        </div>
+
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Mulai Berlaku</label>
@@ -89,6 +95,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diskon</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Masa Aktif</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kuota</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
@@ -113,6 +120,9 @@
                                         s/d
                                         <br>
                                         @if($promo->valid_until) {{ \Carbon\Carbon::parse($promo->valid_until)->format('d M y H:i') }} @else Selalu @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $promo->used_count }} / {{ $promo->max_uses ?? '∞' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if($promo->is_active)

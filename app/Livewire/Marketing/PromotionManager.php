@@ -13,6 +13,7 @@ class PromotionManager extends Component
     use WithPagination;
 
     public $code, $type = 'percentage', $value, $min_purchase = 0;
+    public $max_uses = null;
     public $valid_from, $valid_until, $is_active = true;
     public $editingId = null;
 
@@ -20,6 +21,7 @@ class PromotionManager extends Component
         'code' => 'required|unique:promotions,code',
         'type' => 'required|in:percentage,fixed',
         'value' => 'required|numeric|min:0',
+        'max_uses' => 'nullable|integer|min:1',
         'min_purchase' => 'required|numeric|min:0',
         'valid_from' => 'nullable|date',
         'valid_until' => 'nullable|date|after_or_equal:valid_from',
@@ -41,6 +43,7 @@ class PromotionManager extends Component
                 'code' => strtoupper($this->code),
                 'type' => $this->type,
                 'value' => $this->value,
+                'max_uses' => $this->max_uses ?: null,
                 'min_purchase' => $this->min_purchase,
                 'valid_from' => $this->valid_from ?: null,
                 'valid_until' => $this->valid_until ?: null,
@@ -59,6 +62,7 @@ class PromotionManager extends Component
         $this->code = $promo->code;
         $this->type = $promo->type;
         $this->value = (float) $promo->value;
+        $this->max_uses = $promo->max_uses;
         $this->min_purchase = (float) $promo->min_purchase;
         $this->valid_from = $promo->valid_from ? \Carbon\Carbon::parse($promo->valid_from)->format('Y-m-d\TH:i') : null;
         $this->valid_until = $promo->valid_until ? \Carbon\Carbon::parse($promo->valid_until)->format('Y-m-d\TH:i') : null;
@@ -76,6 +80,7 @@ class PromotionManager extends Component
         $this->code = '';
         $this->type = 'percentage';
         $this->value = '';
+        $this->max_uses = null;
         $this->min_purchase = 0;
         $this->valid_from = null;
         $this->valid_until = null;

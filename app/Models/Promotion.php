@@ -10,6 +10,8 @@ class Promotion extends Model
         'code',
         'type',
         'value',
+        'max_uses',
+        'used_count',
         'min_purchase',
         'valid_from',
         'valid_until',

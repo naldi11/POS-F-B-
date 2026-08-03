@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['order_id', 'menu_id', 'quantity', 'price', 'notes'])]
+#[Fillable(['order_id', 'menu_id', 'quantity', 'notes'])]
 class OrderDetail extends Model
 {
     public function order(): BelongsTo
@@ -22,6 +22,6 @@ class OrderDetail extends Model
 
     public function getSubtotalAttribute()
     {
-        return $this->price * $this->quantity;
+        return $this->menu->price * $this->quantity;
     }
 }

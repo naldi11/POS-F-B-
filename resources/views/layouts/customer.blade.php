@@ -19,5 +19,46 @@
         <div class="max-w-md mx-auto min-h-screen bg-white shadow-xl relative flex flex-col">
             {{ $slot }}
         </div>
+
+        <script>
+            window.compressImage = function(file, quality = 0.6, maxWidth = 1200) {
+                return new Promise((resolve, reject) => {
+                    if (!file.type.match(/image.*/)) {
+                        resolve(file);
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = event => {
+                        const img = new Image();
+                        img.src = event.target.result;
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            if (width > maxWidth) {
+                                height = Math.round(height * maxWidth / width);
+                                width = maxWidth;
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            canvas.toBlob((blob) => {
+                                try {
+                                    const fileName = file.name || 'image.jpg';
+                                    const newFile = new File([blob], fileName, { type: 'image/jpeg', lastModified: Date.now() });
+                                    resolve(newFile);
+                                } catch(e) {
+                                    reject(e);
+                                }
+                            }, 'image/jpeg', quality);
+                        };
+                        img.onerror = error => reject(error);
+                    };
+                    reader.onerror = error => reject(error);
+                });
+            };
+        </script>
     </body>
 </html>

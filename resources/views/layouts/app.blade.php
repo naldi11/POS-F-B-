@@ -73,7 +73,7 @@
                                 <li>
                                     <a href="{{ route('admin.qrcode') }}" wire:navigate class="group relative flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-orange-50 duration-300 ease-in-out hover:bg-orange-700/80 hover:text-white {{ request()->routeIs('admin.qrcode') ? 'bg-orange-700 text-white shadow-inner' : '' }}">
                                         <svg class="w-5 h-5 {{ request()->routeIs('admin.qrcode') ? 'text-white' : 'text-orange-200 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
-                                        Kelola QR Code
+                                        Kelola Meja
                                     </a>
                                 </li>
                                 <li>
@@ -121,6 +121,45 @@
                 </main>
                 
             </div>
-        </div>
+        </div>        <script>
+            window.compressImage = function(file, quality = 0.6, maxWidth = 1200) {
+                return new Promise((resolve, reject) => {
+                    if (!file.type.match(/image.*/)) {
+                        resolve(file);
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = event => {
+                        const img = new Image();
+                        img.src = event.target.result;
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            if (width > maxWidth) {
+                                height = Math.round(height * maxWidth / width);
+                                width = maxWidth;
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            canvas.toBlob((blob) => {
+                                try {
+                                    const fileName = file.name || 'image.jpg';
+                                    const newFile = new File([blob], fileName, { type: 'image/jpeg', lastModified: Date.now() });
+                                    resolve(newFile);
+                                } catch(e) {
+                                    reject(e);
+                                }
+                            }, 'image/jpeg', quality);
+                        };
+                        img.onerror = error => reject(error);
+                    };
+                    reader.onerror = error => reject(error);
+                });
+            };
+        </script>
     </body>
 </html>

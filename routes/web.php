@@ -12,7 +12,7 @@ use App\Livewire\Customer\Checkout;
 use App\Livewire\Customer\OrderStatus;
 
 // --- Customer Routes ---
-Route::redirect('/', '/menu')->name('welcome');
+Volt::route('/', 'customer.welcome')->name('welcome');
 
 // Menu Catalog & Cart
 Route::get('/menu', MenuList::class)->name('customer.menu');
@@ -32,19 +32,25 @@ Route::view('profile', 'profile')
 
 
 use App\Livewire\Staff\CashierDashboard;
+use App\Livewire\Marketing\Dashboard as MarketingDashboard;
+use App\Livewire\Marketing\PromotionManager;
 
 use App\Livewire\Admin\Report;
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/categories', CategoryManager::class)->name('admin.categories');
     Route::get('/admin/menus', MenuManager::class)->name('admin.menus');
-    Route::get('/admin/qrcode', \App\Livewire\Admin\QrCodeManager::class)->name('admin.qrcode');
+    Route::get('/admin/qrcode', \App\Livewire\Admin\TableManager::class)->name('admin.qrcode');
     Route::get('/admin/payments', \App\Livewire\Admin\PaymentManager::class)->name('admin.payments');
     Route::get('/admin/receipt-settings', \App\Livewire\Admin\ReceiptSettings::class)->name('admin.receipt-settings');
     Route::get('/admin/reports', Report::class)->name('admin.reports');
 
     // Staff Routes
     Route::get('/staff/cashier', CashierDashboard::class)->name('staff.cashier');
+
+    // Marketing Routes
+    Route::get('/marketing/dashboard', MarketingDashboard::class)->name('marketing.dashboard');
+    Route::get('/marketing/promotions', PromotionManager::class)->name('marketing.promotions');
 });
 
 require __DIR__.'/auth.php';

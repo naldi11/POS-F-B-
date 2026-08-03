@@ -49,8 +49,7 @@ class CashierDashboard extends Component
             $query->where(function ($q) {
                 $q->where('customer_name', 'like', '%' . $this->search . '%')
                   ->orWhere('customer_phone', 'like', '%' . $this->search . '%')
-                  ->orWhere('id', 'like', '%' . $this->search . '%')
-                  ->orWhere('order_number', 'like', '%' . $this->search . '%');
+                  ->orWhere('id', 'like', '%' . $this->search . '%');
             });
         }
 
@@ -82,12 +81,38 @@ class CashierDashboard extends Component
         }
     }
 
+    private function syncTableStatus($tableId)
+    {
+        if (!$tableId) return;
+        $table = \App\Models\Table::find($tableId);
+        if (!$table) return;
+
+        $hasActiveOrders = Order::where('table_id', $tableId)
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->exists();
+
+        $table->update([
+            'status' => $hasActiveOrders ? 'occupied' : 'available'
+        ]);
+    }
+
     public function completeOrder($orderId)
     {
         $order = Order::find($orderId);
         if ($order) {
             $order->update(['status' => 'completed']);
-            $order->table->update(['status' => 'available']);
+            $this->syncTableStatus($order->table_id);
+            \App\Events\OrderUpdated::dispatch($order);
+            unset($this->orders);
+        }
+    }
+
+    public function updateOrderStatus($orderId, $status)
+    {
+        $order = Order::find($orderId);
+        if ($order) {
+            $order->update(['status' => $status]);
+            $this->syncTableStatus($order->table_id);
             \App\Events\OrderUpdated::dispatch($order);
             unset($this->orders);
         }

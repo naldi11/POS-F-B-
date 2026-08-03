@@ -32,7 +32,7 @@
                         ];
                         $statusLabels = [
                             'waiting_payment' => 'Menunggu Pembayaran',
-                            'waiting_verification' => 'Menunggu Verifikasi',
+                            'waiting_verification' => 'Pending (Menunggu Verifikasi)',
                             'verified' => 'Pesanan Diterima',
                             'cooking' => 'Sedang Dimasak',
                             'ready' => 'Siap Disajikan',
@@ -80,7 +80,26 @@
             </div>
             
             @if($order->status === 'waiting_payment')
-                <div class="p-5 border-t border-red-100 bg-red-50">
+                <div class="p-5 border-t border-red-100 bg-red-50"
+                        x-data="{ isDropping: false, isCompressing: false,
+                            async handleUpload(file) {
+                                if (!file) return;
+                                this.isCompressing = true;
+                                try {
+                                    const compressedFile = await window.compressImage(file);
+                                    this.isCompressing = false;
+                                    $wire.upload('payment_proof', compressedFile, 
+                                        () => {},
+                                        () => {},
+                                        (event) => {}
+                                    );
+                                } catch (e) {
+                                    console.error(e);
+                                    $wire.upload('payment_proof', file);
+                                    this.isCompressing = false;
+                                }
+                            }
+                        }">
                     <div class="text-center mb-4">
                         <h3 class="text-red-700 font-bold mb-1">Pembayaran Ditolak</h3>
                         <p class="text-red-600 text-xs">Bukti pembayaran Anda tidak valid. Silakan unggah ulang bukti yang benar.</p>
@@ -89,13 +108,12 @@
                     <form wire:submit.prevent="reuploadPayment">
                         <label 
                             for="payment-proof-dropzone" 
-                            x-data="{ isDropping: false }"
                             x-on:dragover.prevent="isDropping = true"
                             x-on:dragleave.prevent="isDropping = false"
                             x-on:drop.prevent="
                                 isDropping = false; 
                                 if ($event.dataTransfer.files.length > 0) {
-                                    $wire.upload('payment_proof', $event.dataTransfer.files[0]);
+                                    handleUpload($event.dataTransfer.files[0]);
                                 } else {
                                     let html = $event.dataTransfer.getData('text/html');
                                     if (html) {
@@ -107,7 +125,7 @@
                                                 .then(res => res.blob())
                                                 .then(blob => {
                                                     let f = new File([blob], 'payment_proof_dropped.jpg', {type: blob.type});
-                                                    $wire.upload('payment_proof', f);
+                                                    handleUpload(f);
                                                 }).catch(err => {
                                                     console.error(err);
                                                     alert('Gagal mengambil gambar dari browser.');
@@ -125,11 +143,12 @@
                                 <div class="flex flex-col items-center justify-center pt-5 pb-6 pointer-events-none">
                                     <svg class="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                                     <p class="text-sm text-gray-500 font-semibold mb-1">Unggah Bukti Baru</p>
-                                    <p class="text-xs text-gray-400">Klik atau Drag & Drop (Max. 2MB)</p>
+                                    <p class="text-xs text-gray-400">Klik atau Drag & Drop (Max. 50MB)</p>
                                 </div>
                             @endif
-                            <input id="payment-proof-dropzone" type="file" wire:model="payment_proof" accept="image/*" class="hidden">
+                            <input id="payment-proof-dropzone" type="file" x-on:change="handleUpload($event.target.files[0])" accept="image/jpeg,image/png,image/jpg,image/webp" class="sr-only">
                         </label>
+                        <div x-show="isCompressing" style="display: none;" class="text-xs text-orange-500 mb-2 text-center animate-pulse w-full">Mengompresi gambar...</div>
                         <div wire:loading wire:target="payment_proof" class="text-xs text-orange-500 mb-2 text-center animate-pulse w-full">Memuat gambar...</div>
                         @error('payment_proof') <span class="text-red-500 text-xs mb-2 block text-center">{{ $message }}</span> @enderror
                         

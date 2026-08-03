@@ -13,6 +13,7 @@ class MenuManager extends Component
     use WithPagination, WithFileUploads;
 
     public $category_id, $name, $description, $price, $image, $is_available = true;
+    public $best_seller_status = 'auto';
     public $editingId = null;
     public $isOpen = false;
     public $existingImage = null;
@@ -25,8 +26,9 @@ class MenuManager extends Component
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'image' => $this->editingId ? 'nullable|image|max:2048' : 'nullable|image|max:2048',
+            'image' => $this->editingId ? 'nullable|image|max:51200' : 'nullable|image|max:51200',
             'is_available' => 'boolean',
+            'best_seller_status' => 'required|in:auto,yes,no',
         ];
     }
 
@@ -45,6 +47,7 @@ class MenuManager extends Component
         $this->description = $menu->description;
         $this->price = $menu->price;
         $this->is_available = $menu->is_available;
+        $this->best_seller_status = $menu->best_seller_status;
         $this->existingImage = $menu->image;
         $this->isOpen = true;
     }
@@ -58,7 +61,8 @@ class MenuManager extends Component
             'name' => $this->name,
             'description' => $this->description,
             'price' => $this->price,
-            'is_available' => $this->is_available
+            'is_available' => $this->is_available,
+            'best_seller_status' => $this->best_seller_status
         ];
 
         if ($this->image) {
@@ -148,6 +152,7 @@ class MenuManager extends Component
         $this->existingImage = null;
         $this->downloadedImage = null;
         $this->is_available = true;
+        $this->best_seller_status = 'auto';
         $this->editingId = null;
     }
 

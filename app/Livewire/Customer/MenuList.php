@@ -11,7 +11,7 @@ use Livewire\Attributes\Layout;
 #[Layout('layouts.customer')]
 class MenuList extends Component
 {
-    public $table_id;
+    public $table_number;
     public $categories;
     public $selectedCategory = null;
     
@@ -23,6 +23,11 @@ class MenuList extends Component
 
     public function mount()
     {
+        if (request()->has('table')) {
+            session(['table_number' => request()->query('table')]);
+        }
+        $this->table_number = session('table_number');
+
         $this->categories = Category::where('is_active', true)->get();
     }
 

@@ -15,24 +15,29 @@ class PaymentManager extends Component
 
     public function mount()
     {
-        $qrisSetting = Setting::where('key', 'qris_image')->first();
-        if ($qrisSetting) {
-            $this->saved_qris_url = \Illuminate\Support\Facades\Storage::url($qrisSetting->value);
+        $qris = \App\Models\Qris::first();
+        if ($qris) {
+            $this->saved_qris_url = \Illuminate\Support\Facades\Storage::url($qris->image_path);
         }
     }
 
     public function saveQrisImage()
     {
         $this->validate([
-            'qris_image' => 'required|image|max:2048', // max 2MB
+            'qris_image' => 'required|image|max:51200', // max 50MB
         ]);
 
-        $path = $this->qris_image->store('settings', 'public');
+        $path = $this->qris_image->store('qris', 'public');
         
-        Setting::updateOrCreate(
-            ['key' => 'qris_image'],
-            ['value' => $path]
-        );
+        $qris = \App\Models\Qris::first();
+        if ($qris) {
+            $qris->update(['image_path' => $path]);
+        } else {
+            \App\Models\Qris::create([
+                'image_path' => $path,
+                'is_active' => true
+            ]);
+        }
 
         $this->saved_qris_url = \Illuminate\Support\Facades\Storage::url($path);
         session()->flash('message', 'Gambar QRIS berhasil diperbarui!');

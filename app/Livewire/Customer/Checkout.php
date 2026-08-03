@@ -22,6 +22,13 @@ class Checkout extends Component
     public $qris_image;
     public $cart = [];
     public $total = 0;
+    public $subtotal = 0;
+    public $is_occupied = false;
+    
+    // Promo properties
+    public $promoCodeInput = '';
+    public $appliedPromo = null;
+    public $discountAmount = 0;
 
     public function mount()
     {
@@ -29,14 +36,25 @@ class Checkout extends Component
             return redirect()->route('welcome');
         }
         $this->cart = session()->get('cart', []);
-        $this->total = collect($this->cart)->sum(function($item) {
+        $this->subtotal = collect($this->cart)->sum(function($item) {
             return $item['price'] * $item['quantity'];
         });
+        $this->total = $this->subtotal;
+
+        // Load Table Number from Session
+        $this->table_number = session('table_number', '');
+
+        if ($this->table_number) {
+            $table = \App\Models\Table::where('table_number', $this->table_number)->first();
+            if ($table && ($table->status === 'occupied' || $table->orders()->whereNotIn('status', ['completed', 'cancelled'])->exists())) {
+                $this->is_occupied = true;
+            }
+        }
 
         // Load QRIS Image
-        $setting = \App\Models\Setting::where('key', 'qris_image')->first();
-        if ($setting) {
-            $this->qris_image = $setting->value;
+        $qris = \App\Models\Qris::where('is_active', true)->first();
+        if ($qris) {
+            $this->qris_image = $qris->image_path;
         }
     }
 
@@ -44,8 +62,56 @@ class Checkout extends Component
         'table_number' => 'required|string|max:50',
         'customer_name' => 'required|string|max:255',
         'customer_phone' => 'required|string|max:20',
-        'payment_proof' => 'required|image|max:2048',
+        'payment_proof' => 'required|image|max:51200',
     ];
+
+    public function applyPromo()
+    {
+        $this->resetErrorBag('promoCodeInput');
+        
+        $promo = \App\Models\Promotion::where('code', strtoupper($this->promoCodeInput))
+            ->where('is_active', true)
+            ->where(function($query) {
+                $query->whereNull('valid_from')->orWhere('valid_from', '<=', now());
+            })
+            ->where(function($query) {
+                $query->whereNull('valid_until')->orWhere('valid_until', '>=', now());
+            })
+            ->first();
+
+        if (!$promo) {
+            $this->addError('promoCodeInput', 'Kode promo tidak valid atau kadaluarsa.');
+            return;
+        }
+
+        if ($this->subtotal < $promo->min_purchase) {
+            $this->addError('promoCodeInput', 'Minimal pembelian untuk promo ini adalah Rp ' . number_format($promo->min_purchase, 0, ',', '.'));
+            return;
+        }
+
+        $this->appliedPromo = $promo;
+        
+        if ($promo->type === 'percentage') {
+            $this->discountAmount = ($this->subtotal * $promo->value) / 100;
+        } else {
+            $this->discountAmount = $promo->value;
+        }
+
+        if ($this->discountAmount > $this->subtotal) {
+            $this->discountAmount = $this->subtotal;
+        }
+
+        $this->total = $this->subtotal - $this->discountAmount;
+        $this->promoCodeInput = '';
+        session()->flash('promo_message', 'Kode Promo berhasil digunakan!');
+    }
+
+    public function removePromo()
+    {
+        $this->appliedPromo = null;
+        $this->discountAmount = 0;
+        $this->total = $this->subtotal;
+    }
 
     public function processCheckout()
     {
@@ -57,21 +123,18 @@ class Checkout extends Component
             // Find or create table
             $table = \App\Models\Table::firstOrCreate(
                 ['table_number' => $this->table_number],
-                ['status' => 'available']
+                ['status' => 'occupied']
             );
-
-            // Create Order
-            $orderNumber = 'ORD-' . date('ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(6));
-            $invoiceNumber = 'INV-' . date('ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(6));
+            $table->update(['status' => 'occupied']);
 
             $order = Order::create([
-                'order_number' => $orderNumber,
-                'invoice_number' => $invoiceNumber,
                 'table_id' => $table->id,
                 'customer_name' => $this->customer_name,
                 'customer_phone' => $this->customer_phone,
                 'total_amount' => $this->total,
-                'status' => 'waiting_verification'
+                'status' => 'waiting_verification',
+                'promotion_id' => $this->appliedPromo ? $this->appliedPromo->id : null,
+                'discount_amount' => $this->discountAmount
             ]);
 
             // Create Order Details
@@ -83,7 +146,6 @@ class Checkout extends Component
                     'order_id' => $order->id,
                     'menu_id' => $item['menu_id'] ?? $fallbackMenuId,
                     'quantity' => $item['quantity'],
-                    'price' => $item['price'],
                     'notes' => $item['notes'] ?? null
                 ]);
             }
@@ -94,7 +156,6 @@ class Checkout extends Component
             // Create Payment
             Payment::create([
                 'order_id' => $order->id,
-                'payment_method' => 'qris',
                 'proof_image' => $proofPath,
                 'status' => 'pending'
             ]);

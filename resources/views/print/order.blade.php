@@ -92,6 +92,11 @@
                     <td class="col-qty">{{ $detail->quantity }}</td>
                     <td class="col-sub">{{ number_format($detail->subtotal, 0, ',', '.') }}</td>
                 </tr>
+                @if($detail->notes)
+                <tr>
+                    <td colspan="3" class="col-item" style="font-size: 10px; font-style: italic; padding-bottom: 4px; border-bottom: 1px dotted #ccc;">Catatan: {{ $detail->notes }}</td>
+                </tr>
+                @endif
                 @endforeach
             </tbody>
         </table>

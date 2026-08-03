@@ -39,7 +39,17 @@ class KitchenDashboard extends Component
         $order = Order::find($orderId);
         if ($order) {
             $order->update(['status' => 'completed']);
-            $order->table->update(['status' => 'available']);
+
+            $hasActiveOrders = Order::where('table_id', $order->table_id)
+                ->whereNotIn('status', ['completed', 'cancelled'])
+                ->exists();
+
+            if ($order->table) {
+                $order->table->update([
+                    'status' => $hasActiveOrders ? 'occupied' : 'available'
+                ]);
+            }
+
             \App\Events\OrderUpdated::dispatch($order);
             $this->loadOrders();
         }

@@ -15,12 +15,30 @@
             <p class="text-gray-500 text-sm">Unggah gambar QRIS asli dari bank atau e-wallet (OVO, GoPay, Dana) toko Anda.</p>
         </div>
 
-        <div class="w-full max-w-sm mb-6 flex-grow">
+        <div class="w-full max-w-sm mb-6 flex-grow"
+                x-data="{ isDropping: false, isCompressing: false,
+                    async handleUpload(file) {
+                        if (!file) return;
+                        this.isCompressing = true;
+                        try {
+                            const compressedFile = await window.compressImage(file);
+                            this.isCompressing = false;
+                            $wire.upload('qris_image', compressedFile, 
+                                () => {},
+                                () => {},
+                                (event) => {}
+                            );
+                        } catch (e) {
+                            console.error(e);
+                            $wire.upload('qris_image', file);
+                            this.isCompressing = false;
+                        }
+                    }
+                }">
             <form wire:submit.prevent="saveQrisImage" class="flex flex-col h-full">
                 
                 <label 
                     for="qris-dropzone" 
-                    x-data="{ isDropping: false }"
                     x-on:dragover.prevent="isDropping = true"
                     x-on:dragleave.prevent="isDropping = false"
                     x-on:drop.prevent="
@@ -58,11 +76,12 @@
                         <div class="flex flex-col items-center justify-center pt-5 pb-6 pointer-events-none">
                             <svg class="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                             <p class="mb-1 text-sm text-gray-500"><span class="font-semibold">Klik atau Drag & Drop</span> untuk upload</p>
-                            <p class="text-xs text-gray-500">PNG, JPG or JPEG (Max. 2MB)</p>
+                            <p class="text-xs text-gray-500">PNG, JPG or JPEG (Max. 50MB)</p>
                         </div>
                     @endif
-                    <input id="qris-dropzone" type="file" wire:model="qris_image" accept="image/*" class="hidden">
+                    <input id="qris-dropzone" type="file" x-on:change="handleUpload($event.target.files[0])" accept="image/jpeg,image/png,image/jpg,image/webp" class="sr-only">
                 </label>
+                <div x-show="isCompressing" style="display: none;" class="text-sm text-orange-500 mb-4 text-center animate-pulse w-full">Mengompresi gambar...</div>
                 <div wire:loading wire:target="qris_image" class="text-sm text-orange-500 mb-4 text-center animate-pulse w-full">Memuat pratinjau gambar...</div>
                 @error('qris_image') <span class="text-red-500 text-xs mb-4 block text-center">{{ $message }}</span> @enderror
 

@@ -25,7 +25,7 @@ class OrderStatus extends Component
     public function reuploadPayment()
     {
         $this->validate([
-            'payment_proof' => 'required|image|max:2048', // Max 2MB
+            'payment_proof' => 'required|image|max:51200', // Max 50MB
         ]);
 
         $proofPath = $this->payment_proof->store('payments', 'public');
@@ -39,7 +39,6 @@ class OrderStatus extends Component
             // Just in case there is no payment record yet (though there should be)
             \App\Models\Payment::create([
                 'order_id' => $this->order->id,
-                'payment_method' => 'qris',
                 'proof_image' => $proofPath,
                 'status' => 'pending'
             ]);

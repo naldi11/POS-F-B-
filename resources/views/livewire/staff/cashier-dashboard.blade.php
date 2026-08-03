@@ -1,13 +1,12 @@
 <div class="p-6">
     <div class="flex flex-col xl:flex-row xl:justify-between xl:items-center mb-6 gap-4">
-        <div class="flex justify-between items-center w-full xl:w-auto">
+        <div class="flex items-center gap-3 w-full xl:w-auto">
             <h2 class="text-2xl font-bold text-gray-900">Cashier Dashboard</h2>
-            <div class="flex space-x-2 text-sm text-gray-500 items-center ml-4">
+            <div class="flex items-center" title="Realtime Live">
                 <span class="relative flex h-3 w-3">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                 </span>
-                <span class="hidden sm:inline">Realtime Live</span>
             </div>
         </div>
         
@@ -17,10 +16,10 @@
                 <button wire:click="$set('tab', 'completed')" class="flex-1 px-4 py-2 text-sm font-medium transition border-l border-gray-200 {{ $tab === 'completed' ? 'bg-orange-500 text-white' : 'text-gray-700 hover:bg-gray-50' }}">Riwayat Selesai</button>
             </div>
             
-            <div class="flex flex-col sm:flex-row gap-2 w-full">
-                <!-- Filter Section (30%) -->
-                <div class="w-full sm:w-[30%] flex flex-col sm:flex-row gap-2">
-                    <select wire:model.live="dateFilter" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm py-2 pl-3 pr-8 text-left">
+            <div class="flex flex-col sm:flex-row gap-2 w-full flex-grow">
+                <!-- Filter Section -->
+                <div class="w-full sm:w-auto shrink-0 flex gap-2">
+                    <select wire:model.live="dateFilter" class="w-full sm:w-40 rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm py-2 pl-3 pr-8 text-left">
                         <option value="today">Hari Ini</option>
                         <option value="week">Minggu Ini</option>
                         <option value="month">Bulan Ini</option>
@@ -29,12 +28,12 @@
                     </select>
                     
                     @if($dateFilter === 'custom')
-                        <input type="date" wire:model.live="customDate" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm py-2 px-3">
+                        <input type="date" wire:model.live="customDate" class="w-full sm:w-40 rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm py-2 px-3">
                     @endif
                 </div>
 
-                <!-- Search Section (70%) -->
-                <div class="relative w-full sm:w-[70%]">
+                <!-- Search Section -->
+                <div class="relative w-full flex-grow">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
@@ -81,7 +80,13 @@
                 <div class="p-4 flex-grow space-y-4">
                     <div class="flex justify-between items-center border-b border-gray-100 pb-2 text-sm">
                         <span class="text-gray-500">Pemesan</span>
-                        <span class="font-bold text-gray-900">{{ $order->customer_name }}</span>
+                        <div class="text-right">
+                            <div class="font-bold text-gray-900">{{ $order->customer_name }}</div>
+                            <div class="text-xs text-gray-500 flex items-center justify-end mt-0.5 space-x-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                <span>{{ $order->customer_phone }}</span>
+                            </div>
+                        </div>
                     </div>
                     
                     <div>
@@ -137,11 +142,22 @@
                         <div class="flex space-x-2">
                             <a href="{{ route('order.print', $order->id) }}" target="_blank" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg transition text-sm flex justify-center items-center space-x-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                                <span>Cetak Struk</span>
+                                <span>Struk</span>
                             </a>
-                            <button wire:click="completeOrder({{ $order->id }})" wire:confirm="Tandai pesanan telah selesai disajikan?" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded-lg transition text-sm text-center">
-                                Selesai
-                            </button>
+                            
+                            @if($order->status === 'verified')
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'cooking')" class="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 rounded-lg transition text-sm text-center">
+                                    Mulai Masak
+                                </button>
+                            @elseif($order->status === 'cooking')
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'ready')" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition text-sm text-center">
+                                    Siap Saji
+                                </button>
+                            @elseif($order->status === 'ready')
+                                <button wire:click="completeOrder({{ $order->id }})" wire:confirm="Tandai pesanan telah selesai disajikan?" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded-lg transition text-sm text-center">
+                                    Selesai
+                                </button>
+                            @endif
                         </div>
                     @elseif($order->status === 'completed')
                         <a href="{{ route('order.print', $order->id) }}" target="_blank" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg transition text-sm flex justify-center items-center space-x-2">

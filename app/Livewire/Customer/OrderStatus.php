@@ -69,6 +69,7 @@ class OrderStatus extends Component
     public function refreshOrder()
     {
         $this->order->refresh();
+        $this->dispatch('order-updated');
     }
 
     public function render()

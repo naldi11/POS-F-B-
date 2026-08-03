@@ -71,16 +71,17 @@
                                 $isCurrent = $index === $currentIndex;
                                 $isFuture = $index > $currentIndex;
                             @endphp
-                            <div class="relative pl-8">
+                            <div class="relative pl-6">
                                 <!-- Bullet -->
-                                <div class="absolute -left-2.5 top-1 w-5 h-5 rounded-full border-2 bg-white flex items-center justify-center transition-all duration-500
+                                <div class="absolute rounded-full border-2 bg-white flex items-center justify-center transition-all duration-500
                                     {{ $isPast ? 'border-orange-500 bg-orange-500' : '' }}
-                                    {{ $isCurrent ? 'border-orange-500 shadow-[0_0_0_4px_rgba(255,237,213,1)] bg-white' : '' }}
-                                    {{ $isFuture ? 'border-gray-300' : '' }}">
+                                    {{ $isCurrent ? 'border-orange-500 bg-white' : '' }}
+                                    {{ $isFuture ? 'border-gray-300' : '' }}"
+                                    style="width: 16px; height: 16px; left: -9px; top: 4px; {{ $isCurrent ? 'box-shadow: 0 0 0 4px rgba(255,237,213,1);' : '' }}">
                                     @if($isCurrent)
-                                        <div class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                                        <div class="rounded-full bg-orange-500 animate-pulse" style="width: 8px; height: 8px;"></div>
                                     @elseif($isPast)
-                                        <svg class="w-2 h-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                        <svg class="text-white" style="width: 10px; height: 10px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                                     @endif
                                 </div>
                                 <!-- Text -->
@@ -262,14 +263,5 @@
                 <span class="text-xs font-bold">Menunggu update...</span>
             </div>
         @endif
-        
-        <script>
-            // Dispatch browser event when Livewire OrderUpdated event is received via Echo
-            document.addEventListener('livewire:initialized', () => {
-                Livewire.on('echo:orders,OrderUpdated', (event) => {
-                    window.dispatchEvent(new CustomEvent('order-updated'));
-                });
-            });
-        </script>
     </div>
 </div>

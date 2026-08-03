@@ -87,11 +87,6 @@ new #[Layout('layouts.customer')] class extends Component {
                 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
                 <div id="reader" class="absolute inset-0 w-full h-full border-none bg-black"></div>
                 
-                <!-- Overlay Switch Camera Button Container -->
-                <div id="camera-controls" class="absolute bottom-4 inset-x-0 flex justify-center z-20 pointer-events-none hidden">
-                    <!-- Button will be injected here -->
-                </div>
-                
                 <!-- Scanning animation overlay -->
                 <div class="absolute inset-0 pointer-events-none z-10 border-2 border-orange-500/30 rounded-2xl">
                     <div class="w-full h-1 bg-orange-500 shadow-[0_0_15px_#f97316] animate-[scan_2s_ease-in-out_infinite]"></div>
@@ -109,6 +104,11 @@ new #[Layout('layouts.customer')] class extends Component {
                     #reader img { display: none !important; }
                     #reader video { object-fit: cover !important; width: 100% !important; height: 100% !important; }
                 </style>
+            </div>
+
+            <!-- Switch Camera Button Container (Below Scanner) -->
+            <div id="camera-controls" class="mt-4 flex justify-center hidden">
+                <!-- Button will be injected here -->
             </div>
 
             @script
@@ -158,7 +158,7 @@ new #[Layout('layouts.customer')] class extends Component {
                             
                             const btn = document.createElement('button');
                             btn.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Ganti Kamera`;
-                            btn.className = "flex items-center px-5 py-2.5 bg-gray-900/80 hover:bg-gray-800 text-white text-sm font-semibold rounded-full backdrop-blur-md border border-white/10 shadow-xl pointer-events-auto transition-transform active:scale-95";
+                            btn.className = "flex items-center justify-center w-full sm:w-auto px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold rounded-xl shadow-lg transition-transform active:scale-95";
                             btn.addEventListener('click', async () => {
                                 currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
                                 await startScanner(cameras[currentCameraIndex].id);

@@ -155,6 +155,11 @@
                                         $wire.upload('image', $event.dataTransfer.files[0]);
                                     }
                                 "
+                                @paste.window="
+                                    if ($event.clipboardData.files.length > 0) {
+                                        $wire.upload('image', $event.clipboardData.files[0]);
+                                    }
+                                "
                                 x-bind:class="isDropping ? 'border-orange-500 bg-orange-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'"
                                 class="relative flex flex-col items-center justify-center w-full min-h-[12rem] p-4 border-2 border-dashed rounded-xl cursor-pointer transition overflow-hidden block">
                                 

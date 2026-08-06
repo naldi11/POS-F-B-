@@ -148,10 +148,14 @@
                         <textarea wire:model="description" rows="2" placeholder="Jelaskan detail event promo..." class="w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm"></textarea>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-3 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Diskon (%)</label>
                             <input type="number" step="0.01" wire:model="discount_percentage" placeholder="0" class="w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Batas Pengguna</label>
+                            <input type="number" wire:model="usage_limit" placeholder="Batas Promo" class="w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Gambar Banner / Poster</label>

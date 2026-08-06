@@ -21,6 +21,7 @@ class EventManager extends Component
     public $banner_image;
     public $existingBanner;
     public $coupon_code;
+    public $usage_limit;
     public $discount_percentage = 0;
     public $start_date;
     public $end_date;
@@ -36,6 +37,7 @@ class EventManager extends Component
         'description' => 'nullable|string',
         'banner_image' => 'nullable|image|max:2048',
         'coupon_code' => 'nullable|string|max:50',
+        'usage_limit' => 'nullable|integer|min:1',
         'discount_percentage' => 'nullable|numeric|min:0|max:100',
         'start_date' => 'nullable|date',
         'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -64,6 +66,7 @@ class EventManager extends Component
         $this->description = $event->description;
         $this->existingBanner = $event->banner_image;
         $this->coupon_code = $event->coupon_code;
+        $this->usage_limit = $event->usage_limit;
         $this->discount_percentage = $event->discount_percentage;
         $this->start_date = $event->start_date ? $event->start_date->format('Y-m-d\TH:i') : null;
         $this->end_date = $event->end_date ? $event->end_date->format('Y-m-d\TH:i') : null;
@@ -93,6 +96,7 @@ class EventManager extends Component
                 'description' => $this->description,
                 'banner_image' => $bannerPath,
                 'coupon_code' => strtoupper($this->coupon_code),
+                'usage_limit' => $this->usage_limit ?: null,
                 'discount_percentage' => $this->discount_percentage ?: 0,
                 'start_date' => $this->start_date ?: null,
                 'end_date' => $this->end_date ?: null,
@@ -130,6 +134,7 @@ class EventManager extends Component
         $this->banner_image = null;
         $this->existingBanner = null;
         $this->coupon_code = '';
+        $this->usage_limit = null;
         $this->discount_percentage = 0;
         $this->start_date = null;
         $this->end_date = null;

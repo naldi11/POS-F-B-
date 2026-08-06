@@ -16,6 +16,8 @@ class EventPromotion extends Model
         'description',
         'banner_image',
         'coupon_code',
+        'usage_limit',
+        'used_count',
         'discount_percentage',
         'start_date',
         'end_date',

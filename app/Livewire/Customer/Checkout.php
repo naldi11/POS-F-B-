@@ -123,13 +123,13 @@ class Checkout extends Component
     {
         $this->resetErrorBag('promoCodeInput');
         
-        $promo = \App\Models\Promotion::where('code', strtoupper($this->promoCodeInput))
+        $promo = \App\Models\EventPromotion::where('coupon_code', strtoupper($this->promoCodeInput))
             ->where('is_active', true)
             ->where(function($query) {
-                $query->whereNull('valid_from')->orWhere('valid_from', '<=', now());
+                $query->whereNull('start_date')->orWhere('start_date', '<=', now());
             })
             ->where(function($query) {
-                $query->whereNull('valid_until')->orWhere('valid_until', '>=', now());
+                $query->whereNull('end_date')->orWhere('end_date', '>=', now());
             })
             ->first();
 
@@ -138,23 +138,14 @@ class Checkout extends Component
             return;
         }
 
-        if (!is_null($promo->max_uses) && $promo->used_count >= $promo->max_uses) {
+        if (!is_null($promo->usage_limit) && $promo->used_count >= $promo->usage_limit) {
             $this->addError('promoCodeInput', 'Mohon maaf, kuota penggunaan kode promo ini sudah habis.');
-            return;
-        }
-
-        if ($this->subtotal < $promo->min_purchase) {
-            $this->addError('promoCodeInput', 'Minimal pembelian untuk promo ini adalah Rp ' . number_format($promo->min_purchase, 0, ',', '.'));
             return;
         }
 
         $this->appliedPromo = $promo;
         
-        if ($promo->type === 'percentage') {
-            $this->discountAmount = ($this->subtotal * $promo->value) / 100;
-        } else {
-            $this->discountAmount = $promo->value;
-        }
+        $this->discountAmount = ($this->subtotal * $promo->discount_percentage) / 100;
 
         if ($this->discountAmount > $this->subtotal) {
             $this->discountAmount = $this->subtotal;
@@ -181,8 +172,8 @@ class Checkout extends Component
         try {
             // Re-validate and lock promo if applied
             if ($this->appliedPromo) {
-                $promo = \App\Models\Promotion::where('id', $this->appliedPromo->id)->lockForUpdate()->first();
-                if (!$promo || (!is_null($promo->max_uses) && $promo->used_count >= $promo->max_uses)) {
+                $promo = \App\Models\EventPromotion::where('id', $this->appliedPromo->id)->lockForUpdate()->first();
+                if (!$promo || (!is_null($promo->usage_limit) && $promo->used_count >= $promo->usage_limit)) {
                     DB::rollBack();
                     $this->removePromo();
                     $this->addError('promoCodeInput', 'Mohon maaf, kuota promo baru saja habis. Silakan checkout ulang tanpa promo.');

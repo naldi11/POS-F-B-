@@ -1,3 +1,82 @@
+@php
+    $currentTheme = $activeEvent->theme ?? 'general';
+    $theme = [
+        'valentine' => [
+            'headerBg' => 'bg-gradient-to-r from-pink-500 via-red-500 to-rose-600 text-white',
+            'primary' => 'bg-pink-500',
+            'primaryHover' => 'hover:bg-pink-600',
+            'textHover' => 'hover:text-pink-600',
+            'primaryGradient' => 'from-pink-500 to-pink-600',
+            'primaryHoverGradient' => 'hover:from-pink-600 hover:to-pink-700',
+            'text' => 'text-pink-600',
+            'textDark' => 'text-pink-700',
+            'textLight' => 'text-pink-300',
+            'bgLight' => 'bg-pink-50',
+            'bgLighter' => 'bg-pink-100/50',
+            'border' => 'border-pink-200',
+            'borderLight' => 'border-pink-100',
+            'ring' => 'focus:border-pink-500 focus:ring-pink-200',
+            'bestSeller' => 'from-pink-500 to-rose-500',
+            'icon' => '💖',
+        ],
+        'kemerdekaan' => [
+            'headerBg' => 'bg-gradient-to-r from-red-600 to-white text-gray-900 border-b-4 border-red-600',
+            'primary' => 'bg-red-600',
+            'primaryHover' => 'hover:bg-red-700',
+            'textHover' => 'hover:text-red-600',
+            'primaryGradient' => 'from-red-600 to-red-700',
+            'primaryHoverGradient' => 'hover:from-red-700 hover:to-red-800',
+            'text' => 'text-red-600',
+            'textDark' => 'text-red-700',
+            'textLight' => 'text-red-300',
+            'bgLight' => 'bg-red-50',
+            'bgLighter' => 'bg-red-100/50',
+            'border' => 'border-red-200',
+            'borderLight' => 'border-red-100',
+            'ring' => 'focus:border-red-600 focus:ring-red-200',
+            'bestSeller' => 'from-red-600 to-red-800',
+            'icon' => '🇮🇩',
+        ],
+        'natal' => [
+            'headerBg' => 'bg-gradient-to-r from-emerald-700 via-green-600 to-red-600 text-white',
+            'primary' => 'bg-emerald-600',
+            'primaryHover' => 'hover:bg-emerald-700',
+            'textHover' => 'hover:text-emerald-600',
+            'primaryGradient' => 'from-emerald-600 to-emerald-700',
+            'primaryHoverGradient' => 'hover:from-emerald-700 hover:to-emerald-800',
+            'text' => 'text-emerald-600',
+            'textDark' => 'text-emerald-700',
+            'textLight' => 'text-emerald-300',
+            'bgLight' => 'bg-emerald-50',
+            'bgLighter' => 'bg-emerald-100/50',
+            'border' => 'border-emerald-200',
+            'borderLight' => 'border-emerald-100',
+            'ring' => 'focus:border-emerald-600 focus:ring-emerald-200',
+            'bestSeller' => 'from-emerald-600 to-red-600',
+            'icon' => '🎄',
+        ],
+        'general' => [
+            'headerBg' => 'bg-gradient-to-r from-orange-500 to-amber-500 text-white',
+            'primary' => 'bg-orange-500',
+            'primaryHover' => 'hover:bg-orange-600',
+            'textHover' => 'hover:text-orange-600',
+            'primaryGradient' => 'from-orange-500 to-orange-600',
+            'primaryHoverGradient' => 'hover:from-orange-600 hover:to-orange-700',
+            'text' => 'text-orange-600',
+            'textDark' => 'text-orange-700',
+            'textLight' => 'text-orange-300',
+            'bgLight' => 'bg-orange-50',
+            'bgLighter' => 'bg-orange-100/50',
+            'border' => 'border-orange-200',
+            'borderLight' => 'border-orange-100',
+            'ring' => 'focus:border-orange-500 focus:ring-orange-200',
+            'bestSeller' => 'from-orange-500 to-red-500',
+            'icon' => '✨',
+        ],
+    ];
+    $t = $theme[$currentTheme] ?? $theme['general'];
+@endphp
+
 <div class="w-full pt-6 pb-28 relative" x-data="{ 
     showHookModal: false,
     init() {
@@ -27,19 +106,8 @@
          style="display: none;">
         
         <div class="relative bg-white rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl border border-white/20 transform">
-            @php
-                $themeStyles = [
-                    'valentine' => 'bg-gradient-to-r from-pink-500 via-red-500 to-rose-600 text-white',
-                    'kemerdekaan' => 'bg-gradient-to-r from-red-600 to-white text-gray-900 border-b-4 border-red-600',
-                    'natal' => 'bg-gradient-to-r from-emerald-700 via-green-600 to-red-600 text-white',
-                    'general' => 'bg-gradient-to-r from-orange-500 to-amber-500 text-white',
-                ];
-                $currentTheme = $activeEvent->theme ?? 'general';
-                $headerBg = $themeStyles[$currentTheme] ?? $themeStyles['general'];
-            @endphp
-
             <!-- Banner & Header -->
-            <div class="{{ $headerBg }} p-6 text-center relative overflow-hidden">
+            <div class="{{ $t['headerBg'] }} p-6 text-center relative overflow-hidden">
                 <!-- Decorative Elements -->
                 <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
                 <div class="absolute -left-4 -top-4 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
@@ -52,11 +120,7 @@
 
                 @if($activeEvent)
                     <div class="text-3xl mb-1">
-                        @if($activeEvent->theme === 'valentine') 💖
-                        @elseif($activeEvent->theme === 'kemerdekaan') 🇮🇩
-                        @elseif($activeEvent->theme === 'natal') 🎄
-                        @else ✨
-                        @endif
+                        {{ $t['icon'] }}
                     </div>
                     <h3 class="text-xl font-extrabold tracking-tight mb-1">{{ $activeEvent->title }}</h3>
                     @if($activeEvent->headline)
@@ -88,22 +152,23 @@
                 @endif
 
                 @if($activeEvent && $activeEvent->coupon_code)
-                    <div class="mb-5 p-3 bg-orange-50 rounded-xl border border-orange-200">
-                        <span class="text-[11px] text-orange-600 font-bold uppercase block mb-0.5">Kode Diskon Spesial</span>
-                        <div class="font-mono font-black text-orange-700 text-lg tracking-wider">{{ $activeEvent->coupon_code }}</div>
+                    <div class="mb-5 p-3 {{ $t['bgLight'] }} rounded-xl border {{ $t['border'] }}">
+                        <span class="text-[11px] {{ $t['text'] }} font-bold uppercase block mb-0.5">Kode Diskon Spesial</span>
+                        <div class="font-mono font-black {{ $t['textDark'] }} text-lg tracking-wider">{{ $activeEvent->coupon_code }}</div>
                         @if($activeEvent->discount_percentage > 0)
                             <span class="text-[10px] text-green-600 font-bold">Potongan {{ $activeEvent->discount_percentage }}%</span>
                         @endif
                     </div>
                 @endif
 
-                <button @click="dismissModal()" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-3 px-6 rounded-2xl transition shadow-lg active:scale-95 flex items-center justify-center space-x-2">
+                <button @click="dismissModal()" class="w-full bg-gradient-to-r {{ $t['primaryGradient'] }} {{ $t['primaryHoverGradient'] }} text-white font-bold py-3 px-6 rounded-2xl transition shadow-lg active:scale-95 flex items-center justify-center space-x-2">
                     <span>Lihat Menu &amp; Pesan Sekarang</span>
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </button>
             </div>
         </div>
     </div>
+    
     <div class="px-4">
         
         <!-- Header & Cart Icon -->
@@ -112,8 +177,8 @@
                 <h1 class="text-2xl font-bold text-gray-900">Menu Kami</h1>
                 <p class="text-sm text-gray-500">Silakan pilih pesanan Anda</p>
             </div>
-            <a href="{{ route('customer.cart') }}" class="relative p-2.5 bg-orange-50 rounded-full shadow-sm hover:shadow-md transition">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <a href="{{ route('customer.cart') }}" class="relative p-2.5 {{ $t['bgLight'] }} rounded-full shadow-sm hover:shadow-md transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 {{ $t['text'] }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 @if($cartCount > 0)
@@ -138,11 +203,11 @@
 
         <!-- Categories -->
         <div class="mb-6 flex overflow-x-auto whitespace-nowrap pb-2 scrollbar-hide -mx-4 px-4 snap-x">
-            <button wire:click="selectCategory(null)" class="snap-start inline-block px-5 py-2 rounded-full text-sm font-semibold transition {{ $selectedCategory === null ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
+            <button wire:click="selectCategory(null)" class="snap-start inline-block px-5 py-2 rounded-full text-sm font-semibold transition {{ $selectedCategory === null ? $t['primary'].' text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
                 Semua
             </button>
             @foreach($categories as $category)
-                <button wire:click="selectCategory({{ $category->id }})" class="snap-start inline-block px-5 py-2 ml-2 rounded-full text-sm font-semibold transition {{ $selectedCategory === $category->id ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
+                <button wire:click="selectCategory({{ $category->id }})" class="snap-start inline-block px-5 py-2 ml-2 rounded-full text-sm font-semibold transition {{ $selectedCategory === $category->id ? $t['primary'].' text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
                     {{ $category->name }}
                 </button>
             @endforeach
@@ -152,22 +217,22 @@
         @if(!$selectedCategory && $bundles->count() > 0)
         <div class="mb-8">
             <div class="flex items-center gap-2 mb-4">
-                <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                <svg class="w-6 h-6 {{ $t['text'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
                 <h2 class="text-xl font-bold text-gray-800">Paket Hemat</h2>
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 @foreach($bundles as $bundle)
-                    <div wire:click="openBundleDetail({{ $bundle->id }})" class="cursor-pointer bg-gradient-to-br from-orange-50 to-white rounded-3xl shadow-[0_2px_10px_rgb(0,0,0,0.06)] border border-orange-100 overflow-hidden flex flex-row sm:flex-col items-stretch transform transition hover:shadow-md active:scale-[0.98]">
+                    <div wire:click="openBundleDetail({{ $bundle->id }})" class="cursor-pointer bg-gradient-to-br from-white to-white rounded-3xl shadow-[0_2px_10px_rgb(0,0,0,0.06)] border {{ $t['borderLight'] }} overflow-hidden flex flex-row sm:flex-col items-stretch transform transition hover:shadow-md active:scale-[0.98]">
                         <div class="relative w-1/3 sm:w-full h-32 sm:h-40 flex-shrink-0">
                             @if($bundle->image)
                                 <img src="{{ Storage::url($bundle->image) }}" alt="{{ $bundle->name }}" class="w-full h-full object-cover">
                             @else
-                                <div class="w-full h-full bg-orange-100/50 flex items-center justify-center text-orange-300">
+                                <div class="w-full h-full {{ $t['bgLighter'] }} flex items-center justify-center {{ $t['textLight'] }}">
                                     <svg class="w-8 h-8 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                                 </div>
                             @endif
-                            <div class="absolute top-2 left-2 bg-orange-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center space-x-1 z-10">
+                            <div class="absolute top-2 left-2 {{ $t['primary'] }} text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center space-x-1 z-10">
                                 <span>PROMO PAKET</span>
                             </div>
                         </div>
@@ -177,8 +242,8 @@
                                 <p class="text-xs text-gray-500 line-clamp-2 mb-3">{{ $bundle->description }}</p>
                             </div>
                             <div class="flex justify-between items-center w-full">
-                                <span class="font-extrabold text-orange-600 text-[15px]">Rp {{ number_format($bundle->price, 0, ',', '.') }}</span>
-                                <div class="p-2 bg-orange-500 text-white rounded-full flex-shrink-0">
+                                <span class="font-extrabold {{ $t['text'] }} text-[15px]">Rp {{ number_format($bundle->price, 0, ',', '.') }}</span>
+                                <div class="p-2 {{ $t['primary'] }} text-white rounded-full flex-shrink-0">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
                                 </div>
                             </div>
@@ -206,7 +271,7 @@
                             </div>
                         @endif
                         @if($menu->is_best_seller)
-                            <div class="absolute top-2 left-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center space-x-1 z-10">
+                            <div class="absolute top-2 left-2 bg-gradient-to-r {{ $t['bestSeller'] }} text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center space-x-1 z-10">
                                 <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
                                 <span>Best Seller</span>
                             </div>
@@ -218,8 +283,8 @@
                             <p class="text-xs text-gray-500 line-clamp-2 mb-3">{{ $menu->description }}</p>
                         </div>
                         <div class="flex justify-between items-center w-full">
-                            <span class="font-extrabold text-orange-600 text-[15px]">Rp {{ number_format($menu->price, 0, ',', '.') }}</span>
-                            <div class="p-2 bg-orange-50 text-orange-600 rounded-full flex-shrink-0">
+                            <span class="font-extrabold {{ $t['text'] }} text-[15px]">Rp {{ number_format($menu->price, 0, ',', '.') }}</span>
+                            <div class="p-2 {{ $t['bgLight'] }} {{ $t['text'] }} rounded-full flex-shrink-0">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
                             </div>
                         </div>
@@ -241,7 +306,7 @@
     <!-- Floating Checkout Bar -->
     <div class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
         <div class="max-w-md mx-auto">
-            <a href="{{ route('customer.cart') }}" class="w-full flex justify-between items-center bg-orange-500 text-white font-bold py-3 px-6 rounded-2xl shadow-lg hover:bg-orange-600 transition transform hover:scale-[1.02] active:scale-[0.98]">
+            <a href="{{ route('customer.cart') }}" class="w-full flex justify-between items-center {{ $t['primary'] }} text-white font-bold py-3 px-6 rounded-2xl shadow-lg {{ $t['primaryHover'] }} transition transform hover:scale-[1.02] active:scale-[0.98]">
                 <div class="flex items-center space-x-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                     <span>{{ $cartCount }} Item</span>
@@ -302,7 +367,7 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Catatan Khusus (Opsional)</label>
-                        <textarea wire:model="notes" rows="3" class="w-full rounded-xl border-gray-200 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200 transition text-sm p-3" placeholder="Contoh: Pedas sedikit, tanpa sayur..."></textarea>
+                        <textarea wire:model="notes" rows="3" class="w-full rounded-xl border-gray-200 shadow-sm {{ $t['ring'] }} transition text-sm p-3" placeholder="Contoh: Pedas sedikit, tanpa sayur..."></textarea>
                     </div>
                 </div>
             </div>
@@ -311,17 +376,17 @@
             <div class="bg-white border-t border-gray-100 p-4 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)] flex items-center space-x-4 shrink-0 z-10">
                 <!-- Quantity Controls -->
                 <div class="flex items-center bg-gray-50 rounded-full border border-gray-200">
-                    <button wire:click="decrementQuantity" class="w-10 h-10 flex items-center justify-center text-gray-600 hover:text-orange-600 transition" {{ $quantity <= 1 ? 'disabled' : '' }}>
+                    <button wire:click="decrementQuantity" class="w-10 h-10 flex items-center justify-center text-gray-600 {{ $t['textHover'] }} transition" {{ $quantity <= 1 ? 'disabled' : '' }}>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
                     </button>
                     <span class="w-10 text-center font-bold text-gray-900">{{ $quantity }}</span>
-                    <button wire:click="incrementQuantity" class="w-10 h-10 flex items-center justify-center text-gray-600 hover:text-orange-600 transition">
+                    <button wire:click="incrementQuantity" class="w-10 h-10 flex items-center justify-center text-gray-600 {{ $t['textHover'] }} transition">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     </button>
                 </div>
                 
                 <!-- Add Button -->
-                <button wire:click="addToCart" class="flex-grow bg-orange-500 text-white font-bold py-3 px-4 rounded-full shadow-lg hover:bg-orange-600 transition transform active:scale-95 flex justify-between items-center">
+                <button wire:click="addToCart" class="flex-grow {{ $t['primary'] }} text-white font-bold py-3 px-4 rounded-full shadow-lg {{ $t['primaryHover'] }} transition transform active:scale-95 flex justify-between items-center">
                     <span>Tambah</span>
                     <span>Rp {{ number_format($item->price * $quantity, 0, ',', '.') }}</span>
                 </button>

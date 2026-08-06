@@ -123,6 +123,13 @@
                         {{ $t['icon'] }}
                     </div>
                     <h3 class="text-xl font-extrabold tracking-tight mb-1">{{ $activeEvent->title }}</h3>
+                    
+                    @if(!is_null($activeEvent->usage_limit) && $activeEvent->used_count >= $activeEvent->usage_limit)
+                        <div class="inline-block mt-1 mb-2 px-3 py-1 bg-gray-800/80 backdrop-blur rounded-full text-xs font-bold text-white uppercase tracking-wider border border-white/20">
+                            ⚠️ Kuota Promo Telah Habis
+                        </div>
+                    @endif
+
                     @if($activeEvent->headline)
                         <p class="text-xs font-medium opacity-90 leading-snug">{{ $activeEvent->headline }}</p>
                     @endif

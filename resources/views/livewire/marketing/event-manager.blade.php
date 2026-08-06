@@ -157,9 +157,21 @@
                             <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Batas Pengguna</label>
                             <input type="number" wire:model="usage_limit" placeholder="Batas Promo" class="w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
                         </div>
-                        <div>
+                        <div x-data="{ isDropping: false }"
+                             @dragover.prevent="isDropping = true"
+                             @dragleave.prevent="isDropping = false"
+                             @drop.prevent="isDropping = false; if($event.dataTransfer.files.length) { $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change', { bubbles: true })); }">
                             <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Gambar Banner / Poster</label>
-                            <input type="file" wire:model="banner_image" accept="image/*" class="w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
+                            <div :class="{ 'border-orange-500 bg-orange-50': isDropping, 'border-gray-300 bg-white': !isDropping }"
+                                 class="relative border-2 border-dashed rounded-xl p-2 transition-colors duration-200">
+                                <input x-ref="fileInput" type="file" wire:model="banner_image" accept="image/*" class="relative z-10 w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-orange-100 file:text-orange-700 hover:file:bg-orange-200 cursor-pointer">
+                                <div class="absolute inset-0 pointer-events-none flex items-center justify-end pr-4" x-show="!isDropping">
+                                    <span class="text-xs text-gray-400 font-medium">Atau Drag & Drop file ke sini</span>
+                                </div>
+                                <div class="absolute inset-0 z-20 pointer-events-none flex items-center justify-center bg-orange-50/90 rounded-xl" x-show="isDropping" style="display: none;">
+                                    <span class="text-orange-600 font-bold text-sm">Lepaskan Gambar</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

@@ -1,4 +1,109 @@
-<div class="w-full pt-6 pb-28 relative">
+<div class="w-full pt-6 pb-28 relative" x-data="{ 
+    showHookModal: false,
+    init() {
+        // Cek apakah sudah pernah melihat popup di sesi/meja ini
+        const table = '{{ $table_number ?? 'general' }}';
+        const modalKey = 'rumpo_hook_seen_' + table;
+        if (!sessionStorage.getItem(modalKey)) {
+            this.showHookModal = true;
+        }
+    },
+    dismissModal() {
+        const table = '{{ $table_number ?? 'general' }}';
+        sessionStorage.setItem('rumpo_hook_seen_' + table, 'true');
+        this.showHookModal = false;
+    }
+}">
+
+    <!-- Pop-up Headline / Hook Interaktif QR Code Scan -->
+    <div x-show="showHookModal" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-90"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-90"
+         class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/75 backdrop-blur-md flex items-center justify-center p-4" 
+         style="display: none;">
+        
+        <div class="relative bg-white rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl border border-white/20 transform">
+            @php
+                $themeStyles = [
+                    'valentine' => 'bg-gradient-to-r from-pink-500 via-red-500 to-rose-600 text-white',
+                    'kemerdekaan' => 'bg-gradient-to-r from-red-600 to-white text-gray-900 border-b-4 border-red-600',
+                    'natal' => 'bg-gradient-to-r from-emerald-700 via-green-600 to-red-600 text-white',
+                    'general' => 'bg-gradient-to-r from-orange-500 to-amber-500 text-white',
+                ];
+                $currentTheme = $activeEvent->theme ?? 'general';
+                $headerBg = $themeStyles[$currentTheme] ?? $themeStyles['general'];
+            @endphp
+
+            <!-- Banner & Header -->
+            <div class="{{ $headerBg }} p-6 text-center relative overflow-hidden">
+                <!-- Decorative Elements -->
+                <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
+                <div class="absolute -left-4 -top-4 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
+                
+                @if($table_number)
+                    <span class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-wider mb-2 text-white">
+                        📍 Meja Nomor {{ $table_number }}
+                    </span>
+                @endif
+
+                @if($activeEvent)
+                    <div class="text-3xl mb-1">
+                        @if($activeEvent->theme === 'valentine') 💖
+                        @elseif($activeEvent->theme === 'kemerdekaan') 🇮🇩
+                        @elseif($activeEvent->theme === 'natal') 🎄
+                        @else ✨
+                        @endif
+                    </div>
+                    <h3 class="text-xl font-extrabold tracking-tight mb-1">{{ $activeEvent->title }}</h3>
+                    @if($activeEvent->headline)
+                        <p class="text-xs font-medium opacity-90 leading-snug">{{ $activeEvent->headline }}</p>
+                    @endif
+                @else
+                    <div class="text-3xl mb-1">☕</div>
+                    <h3 class="text-2xl font-black tracking-tight">Selamat Datang!</h3>
+                    <p class="text-xs font-medium opacity-90 mt-1">Nikmati hidangan spesial &amp; suasana hangat di Rumpo Cafe</p>
+                @endif
+            </div>
+
+            <!-- Content Body -->
+            <div class="p-6 text-center">
+                @if($activeEvent && $activeEvent->banner_image)
+                    <div class="mb-4 rounded-2xl overflow-hidden shadow-md border border-gray-100">
+                        <img src="{{ Storage::url($activeEvent->banner_image) }}" class="w-full h-40 object-cover">
+                    </div>
+                @endif
+
+                @if($activeEvent && $activeEvent->description)
+                    <p class="text-xs text-gray-600 mb-4 leading-relaxed bg-gray-50 p-3 rounded-xl border border-gray-100">
+                        {{ $activeEvent->description }}
+                    </p>
+                @else
+                    <p class="text-xs text-gray-500 mb-5 leading-relaxed">
+                        Kami siap melayani pesanan Anda secara langsung dari meja. Pilihlah menu favorit Anda dan nikmati pelayanan terbaik dari kami!
+                    </p>
+                @endif
+
+                @if($activeEvent && $activeEvent->coupon_code)
+                    <div class="mb-5 p-3 bg-orange-50 rounded-xl border border-orange-200">
+                        <span class="text-[11px] text-orange-600 font-bold uppercase block mb-0.5">Kode Diskon Spesial</span>
+                        <div class="font-mono font-black text-orange-700 text-lg tracking-wider">{{ $activeEvent->coupon_code }}</div>
+                        @if($activeEvent->discount_percentage > 0)
+                            <span class="text-[10px] text-green-600 font-bold">Potongan {{ $activeEvent->discount_percentage }}%</span>
+                        @endif
+                    </div>
+                @endif
+
+                <button @click="dismissModal()" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-3 px-6 rounded-2xl transition shadow-lg active:scale-95 flex items-center justify-center space-x-2">
+                    <span>Lihat Menu &amp; Pesan Sekarang</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
     <div class="px-4">
         
         <!-- Header & Cart Icon -->

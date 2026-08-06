@@ -55,12 +55,19 @@ class OrderStatus extends Component
     }
 
     /**
-     * Pelanggan menekan tombol "Selesai" → hapus session meja & kembali ke scan QR.
+     * Pelanggan menekan tombol "Selesai Makan & Tinggalkan Meja".
      */
     public function leaveTable()
     {
+        if ($this->order && $this->order->table) {
+            $this->order->table->update(['status' => 'available']);
+        }
+
         Session::forget('table_id');
         Session::forget('table_number');
+        Session::forget('cart');
+
+        session()->flash('message', 'Terima kasih telah berkunjung ke Rumpo Cafe! Sampai jumpa kembali 🙏');
 
         return $this->redirect(route('welcome'), navigate: true);
     }

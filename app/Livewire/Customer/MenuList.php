@@ -158,9 +158,12 @@ class MenuList extends Component
             $bundles = Bundle::where('is_active', true)->with('items.menu')->get();
         }
 
+        $activeEvent = \App\Models\EventPromotion::active()->first();
+
         return view('livewire.customer.menu-list', [
             'menus' => $query->get(),
             'bundles' => $bundles,
+            'activeEvent' => $activeEvent,
             'cartCount' => collect(session()->get('cart', []))->sum('quantity')
         ]);
     }

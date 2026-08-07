@@ -12,6 +12,7 @@ use App\Livewire\Customer\OrderStatus;
 use App\Livewire\Staff\CashierDashboard;
 use App\Livewire\Marketing\Dashboard as MarketingDashboard;
 use App\Livewire\Admin\Report;
+use App\Livewire\Admin\UserManager;
 
 // =============================================================
 // CUSTOMER ROUTES - rumpocafe.site (domain utama)
@@ -54,6 +55,7 @@ Route::domain(env('ADMIN_DOMAIN', 'login.rumpocafe.site'))->group(function () {
         Route::get('/admin/qrcode', \App\Livewire\Admin\TableManager::class)->name('admin.qrcode');
         Route::get('/admin/payments', \App\Livewire\Admin\PaymentManager::class)->name('admin.payments');
         Route::get('/admin/receipt-settings', \App\Livewire\Admin\ReceiptSettings::class)->name('admin.receipt-settings');
+        Route::get('/admin/users', UserManager::class)->name('admin.users');
         Route::get('/admin/reports', Report::class)->name('admin.reports');
 
         Route::get('/marketing/dashboard', MarketingDashboard::class)->name('marketing.dashboard');

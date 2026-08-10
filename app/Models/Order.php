@@ -19,7 +19,7 @@ class Order extends Model
 
     public function promotion(): BelongsTo
     {
-        return $this->belongsTo(Promotion::class);
+        return $this->belongsTo(EventPromotion::class, 'promotion_id');
     }
 
     public function customer(): BelongsTo

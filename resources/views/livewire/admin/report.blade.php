@@ -145,18 +145,21 @@
                     };
                     initChart();
                     
-                    Livewire.on('updateChart', (data) => {
+                    Livewire.on('updateChart', (event) => {
                         if(this.chart) {
-                            this.chart.data.labels = data[0].labels;
-                            this.chart.data.datasets[0].data = data[0].data;
-                            this.chart.update();
+                            let payload = Array.isArray(event) ? event[0] : event;
+                            if (payload && payload.labels) {
+                                this.chart.data.labels = payload.labels;
+                                this.chart.data.datasets[0].data = payload.data;
+                                this.chart.update();
+                            }
                         }
                     });
                 }
              }">
             <h3 class="text-lg font-bold text-gray-800 mb-4">Grafik Pendapatan</h3>
             <div style="position: relative; height: 300px; width: 100%;">
-                <canvas x-ref="canvas"></canvas>
+                <canvas x-ref="canvas" style="width: 100%; height: 100%;"></canvas>
             </div>
         </div>
 

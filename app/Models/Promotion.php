@@ -13,6 +13,7 @@ class Promotion extends Model
         'max_uses',
         'used_count',
         'min_purchase',
+        'max_discount',
         'valid_from',
         'valid_until',
         'is_active',

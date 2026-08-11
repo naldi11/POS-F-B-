@@ -3,26 +3,43 @@
         @media print {
             aside, header, nav, .print-hidden { display: none !important; }
             body, .bg-\[\#f1f5f9\] { background-color: #fff !important; }
-            .bg-white { box-shadow: none !important; }
+            .bg-white { box-shadow: none !important; border: none !important; }
             .grid { display: flex !important; flex-direction: row !important; gap: 20px !important; margin-bottom: 20px !important; }
-            .grid > div { border: 1px solid #000 !important; padding: 10px !important; flex: 1 !important; }
+            .grid > div { border: 1px solid #ddd !important; padding: 15px !important; flex: 1 !important; border-radius: 8px !important; }
             .rounded-full { display: none !important; }
-            * { color: #000 !important; }
-            table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; }
-            th, td { border: 1px solid #000 !important; padding: 8px !important; background: transparent !important; }
+            * { color: #333 !important; }
+            table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #ddd !important; margin-top: 20px !important; }
+            th { border-bottom: 2px solid #333 !important; padding: 10px !important; text-align: left !important; font-weight: bold !important; background-color: #f9f9f9 !important; -webkit-print-color-adjust: exact; }
+            td { border-bottom: 1px solid #ddd !important; padding: 10px !important; }
             .py-12 { padding: 0 !important; }
             .max-w-7xl { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .print-header { display: block !important; text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 15px; }
+            .print-header h1 { font-size: 26px; margin: 0 0 5px 0; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #000 !important; }
+            .print-header p { font-size: 14px; margin: 0; color: #555 !important; }
+            .chart-container { margin-bottom: 30px !important; page-break-inside: avoid; border: none !important; padding: 0 !important; }
+        }
+        @media screen {
+            .print-header { display: none; }
         }
     </style>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         
-        <div class="mb-6 flex justify-between items-end">
-            <div>
+        <div class="print-header">
+            <h1>Laporan Penjualan Rumpo Cafe</h1>
+            <p>Periode: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p>
+        </div>
+
+        <div class="mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+            <div class="print-hidden">
                 <h2 class="text-2xl font-bold text-gray-900">Laporan Penjualan</h2>
                 <p class="text-sm text-gray-500">Ringkasan pendapatan dari pesanan yang selesai</p>
             </div>
             
-            <div class="flex space-x-2 print-hidden">
+            <div class="flex flex-wrap gap-2 print-hidden">
+                <select wire:model.live="sortOrder" class="bg-white border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block p-2 shadow-sm transition">
+                    <option value="desc">Urutkan: Terbaru</option>
+                    <option value="asc">Urutkan: Terlama</option>
+                </select>
                 <select wire:model.live="filter" class="bg-white border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block p-2 shadow-sm transition">
                     <option value="today">Hari Ini</option>
                     <option value="this_week">Minggu Ini</option>
@@ -63,6 +80,12 @@
                     <h3 class="text-3xl font-bold text-gray-900">{{ $totalOrders }} Pesanan</h3>
                 </div>
             </div>
+        </div>
+
+        <!-- Chart Container -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8 chart-container" wire:ignore>
+            <h3 class="text-lg font-bold text-gray-800 mb-4 print-hidden">Grafik Pendapatan</h3>
+            <canvas id="revenueChart" style="width: 100%; height: 300px;"></canvas>
         </div>
 
         <div class="bg-white rounded-xl shadow-sm border-0 print:border-none">
@@ -111,3 +134,46 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        const ctx = document.getElementById('revenueChart');
+        let chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: @json($chartLabels),
+                datasets: [{
+                    label: 'Pendapatan (Rp)',
+                    data: @json($chartData),
+                    borderColor: '#f97316',
+                    backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        Livewire.on('updateChart', (data) => {
+            const chartData = data[0];
+            chart.data.labels = chartData.labels;
+            chart.data.datasets[0].data = chartData.data;
+            chart.update();
+        });
+    });
+</script>

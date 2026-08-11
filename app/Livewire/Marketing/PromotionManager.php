@@ -13,6 +13,7 @@ class PromotionManager extends Component
     use WithPagination;
 
     public $code, $type = 'percentage', $value, $min_purchase = 0;
+    public $max_discount = null;
     public $max_uses = null;
     public $valid_from, $valid_until, $is_active = true;
     public $editingId = null;
@@ -23,6 +24,7 @@ class PromotionManager extends Component
         'value' => 'required|numeric|min:0',
         'max_uses' => 'nullable|integer|min:1',
         'min_purchase' => 'required|numeric|min:0',
+        'max_discount' => 'nullable|numeric|min:0',
         'valid_from' => 'nullable|date',
         'valid_until' => 'nullable|date|after_or_equal:valid_from',
         'is_active' => 'boolean',
@@ -45,6 +47,7 @@ class PromotionManager extends Component
                 'value' => $this->value,
                 'max_uses' => $this->max_uses ?: null,
                 'min_purchase' => $this->min_purchase,
+                'max_discount' => $this->max_discount ?: null,
                 'valid_from' => $this->valid_from ?: null,
                 'valid_until' => $this->valid_until ?: null,
                 'is_active' => $this->is_active,
@@ -64,6 +67,7 @@ class PromotionManager extends Component
         $this->value = (float) $promo->value;
         $this->max_uses = $promo->max_uses;
         $this->min_purchase = (float) $promo->min_purchase;
+        $this->max_discount = $promo->max_discount ? (float) $promo->max_discount : null;
         $this->valid_from = $promo->valid_from ? \Carbon\Carbon::parse($promo->valid_from)->format('Y-m-d\TH:i') : null;
         $this->valid_until = $promo->valid_until ? \Carbon\Carbon::parse($promo->valid_until)->format('Y-m-d\TH:i') : null;
         $this->is_active = $promo->is_active;
@@ -82,6 +86,7 @@ class PromotionManager extends Component
         $this->value = '';
         $this->max_uses = null;
         $this->min_purchase = 0;
+        $this->max_discount = null;
         $this->valid_from = null;
         $this->valid_until = null;
         $this->is_active = true;

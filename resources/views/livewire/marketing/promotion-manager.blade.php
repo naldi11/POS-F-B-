@@ -47,6 +47,12 @@
                         </div>
 
                         <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Maksimal Diskon Rp (Opsional, untuk %)</label>
+                            <input type="number" step="0.01" wire:model="max_discount" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" placeholder="Biarkan kosong jika tanpa batas">
+                            @error('max_discount') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Batas Kuota Penggunaan (Opsional)</label>
                             <input type="number" wire:model="max_uses" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" placeholder="Biarkan kosong jika tanpa batas (Unlimited)">
                             @error('max_uses') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
@@ -110,6 +116,9 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         @if($promo->type === 'percentage')
                                             {{ $promo->value }}%
+                                            @if($promo->max_discount)
+                                                <div class="text-xs text-gray-500">Maks. Rp {{ number_format($promo->max_discount, 0, ',', '.') }}</div>
+                                            @endif
                                         @else
                                             Rp {{ number_format($promo->value, 0, ',', '.') }}
                                         @endif

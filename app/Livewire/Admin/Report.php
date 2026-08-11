@@ -14,6 +14,9 @@ class Report extends Component
     public $totalRevenue = 0;
     public $totalOrders = 0;
     public $orders = [];
+    public $sortOrder = 'desc';
+    public $chartLabels = [];
+    public $chartData = [];
 
     public function mount()
     {
@@ -40,6 +43,23 @@ class Report extends Component
         $this->generateReport();
     }
 
+    public function updatedSortOrder()
+    {
+        $this->generateReport();
+    }
+
+    public function updatedStartDate()
+    {
+        $this->filter = 'custom';
+        $this->generateReport();
+    }
+
+    public function updatedEndDate()
+    {
+        $this->filter = 'custom';
+        $this->generateReport();
+    }
+
     public function generateReport()
     {
         $query = Order::where('status', 'completed')
@@ -51,7 +71,19 @@ class Report extends Component
         $this->totalOrders = $query->count();
         $this->totalRevenue = $query->sum('total_amount');
         
-        $this->orders = $query->with('table')->orderBy('created_at', 'desc')->get();
+        $this->orders = $query->with('table')->orderBy('created_at', $this->sortOrder)->get();
+
+        $allOrdersForChart = clone $query;
+        $grouped = $allOrdersForChart->orderBy('created_at', 'asc')->get()->groupBy(function($item) {
+            return $item->created_at->format('d M Y');
+        });
+
+        $this->chartLabels = $grouped->keys()->toArray();
+        $this->chartData = $grouped->map(function($row) {
+            return $row->sum('total_amount');
+        })->values()->toArray();
+
+        $this->dispatch('updateChart', labels: $this->chartLabels, data: $this->chartData);
     }
 
     public function render()

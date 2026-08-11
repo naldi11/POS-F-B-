@@ -6,26 +6,23 @@
             .bg-white { box-shadow: none !important; border: none !important; background: #fff !important; }
             .grid { display: none !important; }
             .rounded-full { display: none !important; }
-            * { color: #000 !important; font-family: 'Times New Roman', Times, serif !important; }
-            table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; margin-top: 20px !important; }
-            th { border: 1px solid #000 !important; padding: 12px !important; text-align: left !important; font-weight: bold !important; background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; text-transform: uppercase; font-size: 12px; }
-            td { border: 1px solid #000 !important; padding: 10px !important; font-size: 12px; }
+            * { color: #000 !important; }
+            
+            .print-table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; margin-top: 20px !important; }
+            .print-table th { border: 1px solid #000 !important; padding: 10px !important; text-align: left !important; font-weight: bold !important; background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; text-transform: uppercase; font-size: 11px; }
+            .print-table td { border: 1px solid #000 !important; padding: 8px !important; font-size: 11px; }
+            
             .py-12 { padding: 0 !important; }
             .max-w-7xl { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
             
-            .print-header { display: block !important; text-align: center; margin-bottom: 20px; border-bottom: 3px double #000; padding-bottom: 20px; }
-            .print-header h1 { font-size: 28px; margin: 0 0 5px 0; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
-            .print-header h2 { font-size: 18px; margin: 0 0 10px 0; font-weight: normal; }
-            .print-header p { font-size: 14px; margin: 0; }
-            
             .print-summary { display: flex !important; justify-content: flex-end; margin-top: 20px; }
             .print-summary table { width: 300px !important; border: none !important; }
-            .print-summary th, .print-summary td { border: none !important; padding: 5px 10px !important; font-size: 14px; text-transform: none; background: transparent !important; }
+            .print-summary th, .print-summary td { border: none !important; padding: 5px 10px !important; font-size: 12px; text-transform: none; background: transparent !important; }
             .print-summary th { text-align: left !important; }
             .print-summary td { text-align: right !important; font-weight: bold; }
             
             .print-signature { display: block !important; margin-top: 50px; float: right; width: 250px; text-align: center; }
-            .print-signature p { margin: 5px 0; font-size: 14px; }
+            .print-signature p { margin: 5px 0; font-size: 12px; }
             .print-signature .sign-space { height: 80px; }
             .print-signature .sign-name { font-weight: bold; text-decoration: underline; }
             
@@ -37,13 +34,17 @@
     </style>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         
-        <div class="print-header print-only">
-            <h1>{{ $storeName }}</h1>
-            <h2>Laporan Penjualan Resmi</h2>
-            @if($storeAddress)
-                <p>{{ $storeAddress }}</p>
-            @endif
-            <p>Periode: {{ \Carbon\Carbon::parse($startDate)->format('d F Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d F Y') }}</p>
+        <div class="print-only" style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #000; padding-bottom: 15px; margin-bottom: 25px;">
+            <div style="text-align: left;">
+                <h1 style="font-size: 26px; font-weight: bold; margin: 0; text-transform: uppercase; letter-spacing: 1px;">{{ $storeName }}</h1>
+                @if($storeAddress)
+                    <p style="font-size: 12px; margin: 5px 0 0 0; color: #444;">{{ $storeAddress }}</p>
+                @endif
+            </div>
+            <div style="text-align: right;">
+                <h2 style="font-size: 20px; font-weight: bold; margin: 0; color: #222; text-transform: uppercase;">Laporan Penjualan</h2>
+                <p style="font-size: 12px; margin: 5px 0 0 0; color: #444;">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p>
+            </div>
         </div>
 
         <div class="mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4 print-hidden">
@@ -100,15 +101,67 @@
         </div>
 
         <!-- Chart Container -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8 chart-container" wire:ignore>
-            <h3 class="text-lg font-bold text-gray-800 mb-4 print-hidden">Grafik Pendapatan</h3>
-            <canvas id="revenueChart" style="width: 100%; height: 300px;"></canvas>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8 chart-container print-hidden" wire:ignore
+             x-data="{
+                chart: null,
+                init() {
+                    const initChart = () => {
+                        if (typeof Chart === 'undefined') {
+                            setTimeout(initChart, 100);
+                            return;
+                        }
+                        const ctx = this.$refs.canvas;
+                        if (!ctx) return;
+                        
+                        this.chart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: @json($chartLabels),
+                                datasets: [{
+                                    label: 'Pendapatan (Rp)',
+                                    data: @json($chartData),
+                                    borderColor: '#f97316',
+                                    backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.3
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value) {
+                                                return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    };
+                    initChart();
+                    
+                    Livewire.on('updateChart', (data) => {
+                        if(this.chart) {
+                            this.chart.data.labels = data[0].labels;
+                            this.chart.data.datasets[0].data = data[0].data;
+                            this.chart.update();
+                        }
+                    });
+                }
+             }">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Grafik Pendapatan</h3>
+            <canvas x-ref="canvas" style="width: 100%; height: 300px;"></canvas>
         </div>
 
         <div class="bg-white rounded-xl shadow-sm border-0 print:border-none">
             <div class="p-0 text-gray-900">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-gray-500">
+                    <table class="w-full text-sm text-left text-gray-500 print-table">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
                             <tr>
                                 <th scope="col" class="px-6 py-3">Order ID</th>
@@ -174,56 +227,6 @@
     </div>
 </div>
 
+@assets
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    document.addEventListener('livewire:initialized', () => {
-        const initChart = () => {
-            if (typeof Chart === 'undefined') {
-                setTimeout(initChart, 100);
-                return;
-            }
-            
-            const ctx = document.getElementById('revenueChart');
-            if(!ctx) return;
-            
-            let chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: @json($chartLabels),
-                    datasets: [{
-                        label: 'Pendapatan (Rp)',
-                        data: @json($chartData),
-                        borderColor: '#f97316',
-                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            Livewire.on('updateChart', (data) => {
-                const chartData = data[0];
-                chart.data.labels = chartData.labels;
-                chart.data.datasets[0].data = chartData.data;
-                chart.update();
-            });
-        };
-        
-        initChart();
-    });
-</script>
+@endassets

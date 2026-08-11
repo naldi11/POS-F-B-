@@ -2,45 +2,60 @@
     <style>
         @media print {
             aside, header, nav, .print-hidden { display: none !important; }
-            body, .bg-\[\#f1f5f9\] { background-color: #fff !important; }
-            .bg-white { box-shadow: none !important; border: none !important; }
-            .grid { display: flex !important; flex-direction: row !important; gap: 20px !important; margin-bottom: 20px !important; }
-            .grid > div { border: 1px solid #ddd !important; padding: 15px !important; flex: 1 !important; border-radius: 8px !important; }
+            body { background-color: #fff !important; margin: 0; padding: 0; }
+            .bg-white { box-shadow: none !important; border: none !important; background: #fff !important; }
+            .grid { display: none !important; }
             .rounded-full { display: none !important; }
-            * { color: #333 !important; }
-            table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #ddd !important; margin-top: 20px !important; }
-            th { border-bottom: 2px solid #333 !important; padding: 10px !important; text-align: left !important; font-weight: bold !important; background-color: #f9f9f9 !important; -webkit-print-color-adjust: exact; }
-            td { border-bottom: 1px solid #ddd !important; padding: 10px !important; }
+            * { color: #000 !important; font-family: 'Times New Roman', Times, serif !important; }
+            table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; margin-top: 20px !important; }
+            th { border: 1px solid #000 !important; padding: 12px !important; text-align: left !important; font-weight: bold !important; background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; text-transform: uppercase; font-size: 12px; }
+            td { border: 1px solid #000 !important; padding: 10px !important; font-size: 12px; }
             .py-12 { padding: 0 !important; }
             .max-w-7xl { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
-            .print-header { display: block !important; text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 15px; }
-            .print-header h1 { font-size: 26px; margin: 0 0 5px 0; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #000 !important; }
-            .print-header p { font-size: 14px; margin: 0; color: #555 !important; }
-            .chart-container { margin-bottom: 30px !important; page-break-inside: avoid; border: none !important; padding: 0 !important; }
+            
+            .print-header { display: block !important; text-align: center; margin-bottom: 20px; border-bottom: 3px double #000; padding-bottom: 20px; }
+            .print-header h1 { font-size: 28px; margin: 0 0 5px 0; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
+            .print-header h2 { font-size: 18px; margin: 0 0 10px 0; font-weight: normal; }
+            .print-header p { font-size: 14px; margin: 0; }
+            
+            .print-summary { display: flex !important; justify-content: flex-end; margin-top: 20px; }
+            .print-summary table { width: 300px !important; border: none !important; }
+            .print-summary th, .print-summary td { border: none !important; padding: 5px 10px !important; font-size: 14px; text-transform: none; background: transparent !important; }
+            .print-summary th { text-align: left !important; }
+            .print-summary td { text-align: right !important; font-weight: bold; }
+            
+            .print-signature { display: block !important; margin-top: 50px; float: right; width: 250px; text-align: center; }
+            .print-signature p { margin: 5px 0; font-size: 14px; }
+            .print-signature .sign-space { height: 80px; }
+            .print-signature .sign-name { font-weight: bold; text-decoration: underline; }
+            
+            .chart-container { display: none !important; }
         }
         @media screen {
-            .print-header { display: none; }
+            .print-only { display: none !important; }
         }
     </style>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         
-        <div class="print-header">
-            <h1>Laporan Penjualan Rumpo Cafe</h1>
-            <p>Periode: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p>
+        <div class="print-header print-only">
+            <h1>RUMPO CAFE</h1>
+            <h2>Laporan Penjualan Resmi</h2>
+            <p>Jln. Contoh Alamat No. 123, Kota - Telp: 08123456789</p>
+            <p>Periode: {{ \Carbon\Carbon::parse($startDate)->format('d F Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d F Y') }}</p>
         </div>
 
-        <div class="mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
-            <div class="print-hidden">
+        <div class="mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4 print-hidden">
+            <div>
                 <h2 class="text-2xl font-bold text-gray-900">Laporan Penjualan</h2>
                 <p class="text-sm text-gray-500">Ringkasan pendapatan dari pesanan yang selesai</p>
             </div>
             
-            <div class="flex flex-wrap gap-2 print-hidden">
-                <select wire:model.live="sortOrder" class="bg-white border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block p-2 shadow-sm transition">
+            <div class="flex flex-wrap gap-2 items-center">
+                <select wire:model.live="sortOrder" class="min-w-[160px] pr-8 bg-white border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block p-2 shadow-sm transition">
                     <option value="desc">Urutkan: Terbaru</option>
                     <option value="asc">Urutkan: Terlama</option>
                 </select>
-                <select wire:model.live="filter" class="bg-white border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block p-2 shadow-sm transition">
+                <select wire:model.live="filter" class="min-w-[150px] pr-8 bg-white border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block p-2 shadow-sm transition">
                     <option value="today">Hari Ini</option>
                     <option value="this_week">Minggu Ini</option>
                     <option value="this_month">Bulan Ini</option>
@@ -132,48 +147,81 @@
                 </div>
             </div>
         </div>
+
+        <!-- Print Summary Table -->
+        <div class="print-summary print-only">
+            <table>
+                <tr>
+                    <th>Total Pesanan:</th>
+                    <td>{{ $totalOrders }} Pesanan</td>
+                </tr>
+                <tr>
+                    <th>Total Pendapatan:</th>
+                    <td>Rp {{ number_format($totalRevenue, 0, ',', '.') }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Print Signature Block -->
+        <div class="print-signature print-only">
+            <p>Jakarta, {{ date('d F Y') }}</p>
+            <p>Mengetahui,</p>
+            <div class="sign-space"></div>
+            <p class="sign-name">Manajer Rumpo Cafe</p>
+        </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('livewire:initialized', () => {
-        const ctx = document.getElementById('revenueChart');
-        let chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: @json($chartLabels),
-                datasets: [{
-                    label: 'Pendapatan (Rp)',
-                    data: @json($chartData),
-                    borderColor: '#f97316',
-                    backgroundColor: 'rgba(249, 115, 22, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+        const initChart = () => {
+            if (typeof Chart === 'undefined') {
+                setTimeout(initChart, 100);
+                return;
+            }
+            
+            const ctx = document.getElementById('revenueChart');
+            if(!ctx) return;
+            
+            let chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: @json($chartLabels),
+                    datasets: [{
+                        label: 'Pendapatan (Rp)',
+                        data: @json($chartData),
+                        borderColor: '#f97316',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
 
-        Livewire.on('updateChart', (data) => {
-            const chartData = data[0];
-            chart.data.labels = chartData.labels;
-            chart.data.datasets[0].data = chartData.data;
-            chart.update();
-        });
+            Livewire.on('updateChart', (data) => {
+                const chartData = data[0];
+                chart.data.labels = chartData.labels;
+                chart.data.datasets[0].data = chartData.data;
+                chart.update();
+            });
+        };
+        
+        initChart();
     });
 </script>

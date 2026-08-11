@@ -103,8 +103,8 @@
         <!-- Chart Container -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8 chart-container print-hidden" wire:ignore
              x-data="{
-                chart: null,
                 init() {
+                    let chartInstance = null;
                     const initChart = () => {
                         if (typeof Chart === 'undefined') {
                             setTimeout(initChart, 100);
@@ -113,7 +113,7 @@
                         const ctx = this.$refs.canvas;
                         if (!ctx) return;
                         
-                        this.chart = new Chart(ctx, {
+                        chartInstance = new Chart(ctx, {
                             type: 'line',
                             data: {
                                 labels: @json($chartLabels),
@@ -146,12 +146,12 @@
                     initChart();
                     
                     Livewire.on('updateChart', (event) => {
-                        if(this.chart) {
+                        if(chartInstance) {
                             let payload = Array.isArray(event) ? event[0] : event;
                             if (payload && payload.labels) {
-                                this.chart.data.labels = payload.labels;
-                                this.chart.data.datasets[0].data = payload.data;
-                                this.chart.update();
+                                chartInstance.data.labels = payload.labels;
+                                chartInstance.data.datasets[0].data = payload.data;
+                                chartInstance.update();
                             }
                         }
                     });

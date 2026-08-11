@@ -224,7 +224,7 @@
 
         <!-- Print Signature Block -->
         <div class="print-signature print-only">
-            <p>Jakarta, {{ date('d F Y') }}</p>
+            <p>Medan, {{ date('d F Y') }}</p>
             <p>Mengetahui,</p>
             <div class="sign-space"></div>
             <p class="sign-name">Manajer Rumpo Cafe</p>

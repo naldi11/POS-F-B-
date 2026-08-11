@@ -155,7 +155,9 @@
                 }
              }">
             <h3 class="text-lg font-bold text-gray-800 mb-4">Grafik Pendapatan</h3>
-            <canvas x-ref="canvas" style="width: 100%; height: 300px;"></canvas>
+            <div style="position: relative; height: 300px; width: 100%;">
+                <canvas x-ref="canvas"></canvas>
+            </div>
         </div>
 
         <div class="bg-white rounded-xl shadow-sm border-0 print:border-none">

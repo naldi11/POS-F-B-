@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use Livewire\Component;
 use App\Models\Order;
+use App\Models\Setting;
 use Carbon\Carbon;
 
 class Report extends Component
@@ -17,6 +18,8 @@ class Report extends Component
     public $sortOrder = 'desc';
     public $chartLabels = [];
     public $chartData = [];
+    public $storeName = 'RUMPO CAFE';
+    public $storeAddress = '';
 
     public function mount()
     {
@@ -25,6 +28,15 @@ class Report extends Component
         }
         $this->startDate = Carbon::today()->format('Y-m-d');
         $this->endDate = Carbon::today()->format('Y-m-d');
+        
+        $settings = Setting::pluck('value', 'key')->toArray();
+        $this->storeName = $settings['receipt_store_name'] ?? 'RUMPO CAFE';
+        
+        $addressParts = [];
+        if (!empty($settings['receipt_address'])) $addressParts[] = $settings['receipt_address'];
+        if (!empty($settings['receipt_phone'])) $addressParts[] = 'Telp: ' . $settings['receipt_phone'];
+        $this->storeAddress = implode(' - ', $addressParts);
+
         $this->generateReport();
     }
 

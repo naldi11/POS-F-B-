@@ -38,9 +38,11 @@
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         
         <div class="print-header print-only">
-            <h1>RUMPO CAFE</h1>
+            <h1>{{ $storeName }}</h1>
             <h2>Laporan Penjualan Resmi</h2>
-            <p>Jln. Contoh Alamat No. 123, Kota - Telp: 08123456789</p>
+            @if($storeAddress)
+                <p>{{ $storeAddress }}</p>
+            @endif
             <p>Periode: {{ \Carbon\Carbon::parse($startDate)->format('d F Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d F Y') }}</p>
         </div>
 

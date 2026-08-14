@@ -101,67 +101,70 @@
         </div>
 
         <!-- Chart Container -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8 chart-container print-hidden" wire:ignore
-             x-data="{
-                init() {
-                    let chartInstance = null;
-                    const initChart = () => {
-                        if (typeof Chart === 'undefined') {
-                            setTimeout(initChart, 100);
-                            return;
-                        }
-                        const ctx = this.$refs.canvas;
-                        if (!ctx) return;
-                        
-                        chartInstance = new Chart(ctx, {
-                            type: 'line',
-                            data: {
-                                labels: @json($chartLabels),
-                                datasets: [{
-                                    label: 'Pendapatan (Rp)',
-                                    data: @json($chartData),
-                                    borderColor: '#f97316',
-                                    backgroundColor: 'rgba(249, 115, 22, 0.1)',
-                                    borderWidth: 2,
-                                    fill: true,
-                                    tension: 0.3
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        ticks: {
-                                            callback: function(value) {
-                                                return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        });
-                    };
-                    initChart();
-                    
-                    Livewire.on('updateChart', (event) => {
-                        if(chartInstance) {
-                            let payload = Array.isArray(event) ? event[0] : event;
-                            if (payload && payload.labels) {
-                                chartInstance.data.labels = payload.labels;
-                                chartInstance.data.datasets[0].data = payload.data;
-                                chartInstance.update();
-                            }
-                        }
-                    });
-                }
-             }">
+        <!-- Chart Container -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8 chart-container print-hidden" wire:ignore>
             <h3 class="text-lg font-bold text-gray-800 mb-4">Grafik Pendapatan</h3>
             <div style="position: relative; height: 300px; width: 100%;">
-                <canvas x-ref="canvas" style="width: 100%; height: 100%;"></canvas>
+                <canvas id="revenueChart" style="width: 100%; height: 100%;"></canvas>
             </div>
         </div>
+
+@script
+<script>
+    let chartInstance = null;
+    const initChart = () => {
+        if (typeof Chart === 'undefined') {
+            setTimeout(initChart, 100);
+            return;
+        }
+        const ctx = document.getElementById('revenueChart');
+        if (!ctx) return;
+        
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: $wire.chartLabels,
+                datasets: [{
+                    label: 'Pendapatan (Rp)',
+                    data: $wire.chartData,
+                    borderColor: '#f97316',
+                    backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    };
+    initChart();
+    
+    $wire.on('updateChart', (event) => {
+        if(chartInstance) {
+            let payload = Array.isArray(event) ? event[0] : event;
+            // Handle named arguments in Livewire 3
+            if (payload && payload.labels) {
+                chartInstance.data.labels = payload.labels;
+                chartInstance.data.datasets[0].data = payload.data;
+                chartInstance.update();
+            }
+        }
+    });
+</script>
+@endscript
 
         <div class="bg-white rounded-xl shadow-sm border-0 print:border-none">
             <div class="p-0 text-gray-900">

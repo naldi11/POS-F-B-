@@ -90,11 +90,11 @@
                 @endif
                 
                 <!-- Download Excel/CSV Button -->
-                <button wire:click="exportCsv" wire:loading.attr="disabled" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-3.5 py-2 rounded-lg shadow-sm text-sm font-medium transition flex items-center space-x-1.5 cursor-pointer disabled:opacity-50" title="Unduh data laporan dalam format CSV / Excel">
-                    <svg wire:loading.remove wire:target="exportCsv" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button wire:click="exportCsv" wire:loading.attr="disabled" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-4 py-2 rounded-lg shadow-sm text-sm font-medium transition flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-50" title="Unduh data laporan dalam format CSV / Excel">
+                    <svg wire:loading.remove wire:target="exportCsv" style="width: 16px; height: 16px; min-width: 16px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
-                    <svg wire:loading wire:target="exportCsv" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg wire:loading wire:target="exportCsv" class="animate-spin" style="width: 16px; height: 16px; min-width: 16px; flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -102,8 +102,8 @@
                 </button>
 
                 <!-- Print Report Button -->
-                <button onclick="window.print()" class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white px-3.5 py-2 rounded-lg shadow-sm text-sm font-medium transition flex items-center space-x-1.5 cursor-pointer">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button onclick="window.print()" class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white px-4 py-2 rounded-lg shadow-sm text-sm font-medium transition flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer">
+                    <svg style="width: 16px; height: 16px; min-width: 16px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                     </svg>
                     <span>Cetak Laporan</span>
@@ -115,7 +115,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center">
                 <div class="bg-orange-50 p-4 rounded-full mr-4 print-hidden">
-                    <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <svg style="width: 32px; height: 32px; min-width: 32px; flex-shrink: 0;" class="text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 <div>
                     <p class="text-sm font-medium text-gray-500 mb-1">
@@ -127,7 +127,7 @@
             
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center">
                 <div class="bg-green-50 p-4 rounded-full mr-4 print-hidden">
-                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    <svg style="width: 32px; height: 32px; min-width: 32px; flex-shrink: 0;" class="text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                 </div>
                 <div>
                     <p class="text-sm font-medium text-gray-500 mb-1">
@@ -142,8 +142,8 @@
         @if($selectedDate)
             <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-xs print-hidden animate-fadeIn">
                 <div class="flex items-center space-x-3">
-                    <div class="p-2 bg-orange-500 text-white rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="p-2 bg-orange-500 text-white rounded-lg shrink-0 flex items-center justify-center">
+                        <svg style="width: 20px; height: 20px; min-width: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>
                     </div>
@@ -156,8 +156,10 @@
                         </div>
                     </div>
                 </div>
-                <button wire:click="resetSelectedDate" class="inline-flex items-center justify-center space-x-1.5 px-3 py-1.5 bg-white hover:bg-orange-100 text-orange-800 border border-orange-300 rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <button wire:click="resetSelectedDate" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-orange-100 text-orange-800 border border-orange-300 rounded-lg text-xs font-semibold shadow-xs transition-colors shrink-0 whitespace-nowrap cursor-pointer">
+                    <svg style="width: 14px; height: 14px; min-width: 14px; max-width: 14px; flex-shrink: 0; display: inline-block;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
                     <span>Tampilkan Semua Tanggal ({{ $periodSummary['totalOrders'] }} Pesanan)</span>
                 </button>
             </div>
@@ -357,7 +359,7 @@
                                 <tr>
                                     <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                                         <div class="flex flex-col items-center justify-center">
-                                            <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg style="width: 48px; height: 48px; min-width: 48px;" class="text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                                             </svg>
                                             <p class="font-semibold text-gray-600">Tidak ada data penjualan pada filter yang dipilih.</p>

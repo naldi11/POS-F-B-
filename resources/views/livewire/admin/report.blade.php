@@ -1,53 +1,186 @@
 <div class="py-12">
     <style>
         @media print {
-            aside, header, nav, .print-hidden { display: none !important; }
-            body { background-color: #fff !important; margin: 0; padding: 0; }
-            .bg-white { box-shadow: none !important; border: none !important; background: #fff !important; }
-            .grid { display: none !important; }
-            .rounded-full { display: none !important; }
-            * { color: #000 !important; }
-            
-            .print-table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; margin-top: 20px !important; }
-            .print-table th { border: 1px solid #000 !important; padding: 10px !important; text-align: left !important; font-weight: bold !important; background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; text-transform: uppercase; font-size: 11px; }
-            .print-table td { border: 1px solid #000 !important; padding: 8px !important; font-size: 11px; }
-            
-            .py-12 { padding: 0 !important; }
-            .max-w-7xl { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
-            
-            .print-summary { display: flex !important; justify-content: flex-end; margin-top: 20px; }
-            .print-summary table { width: 320px !important; border: none !important; }
-            .print-summary th, .print-summary td { border: none !important; padding: 5px 10px !important; font-size: 12px; text-transform: none; background: transparent !important; }
-            .print-summary th { text-align: left !important; }
-            .print-summary td { text-align: right !important; font-weight: bold; }
-            
-            .print-signature { display: block !important; margin-top: 40px; float: right; width: 250px; text-align: center; }
-            .print-signature p { margin: 5px 0; font-size: 12px; }
-            .print-signature .sign-space { height: 70px; }
-            .print-signature .sign-name { font-weight: bold; text-decoration: underline; }
-            
-            .chart-container { display: none !important; }
+            @page {
+                size: A4 portrait;
+                margin: 12mm 15mm 15mm 15mm;
+            }
+
+            /* 1. Global Reset for Multi-page Print Pagination */
+            html, body {
+                height: auto !important;
+                min-height: auto !important;
+                width: 100% !important;
+                overflow: visible !important;
+                background-color: #ffffff !important;
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+                color: #000000 !important;
+                font-size: 11pt !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* 2. Unconstrain all layout wrappers from App layout */
+            .h-screen, .h-full, .min-h-screen,
+            .overflow-hidden, .overflow-y-auto, .overflow-x-hidden, .overflow-x-auto,
+            .flex-1, .flex, .relative, .absolute, .static,
+            div, main, section, article, table, thead, tbody, tr, td, th {
+                height: auto !important;
+                min-height: 0 !important;
+                max-height: none !important;
+                overflow: visible !important;
+                position: static !important;
+                transform: none !important;
+                float: none !important;
+            }
+
+            /* 3. Hide all UI components that should not be printed */
+            aside, header, nav, footer, 
+            .print-hidden, .chart-container, [wire\:loading],
+            button, select, input, .no-print {
+                display: none !important;
+            }
+
+            /* 4. Neutralize paddings and margins from main layout */
+            .py-12, .p-4, .md\:p-6, .2xl\:p-10, .max-w-screen-2xl, .max-w-7xl, .mx-auto, .sm\:px-6, .lg\:px-8 {
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+
+            /* 5. Print Header */
+            .print-only {
+                display: block !important;
+            }
+            .print-header-box {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: flex-end !important;
+                border-bottom: 2px solid #000000 !important;
+                padding-bottom: 10px !important;
+                margin-bottom: 20px !important;
+            }
+
+            /* 6. Print Table - Full Width & Clean Multi-page Pagination */
+            .print-table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                border: 1px solid #000000 !important;
+                margin-top: 15px !important;
+                margin-bottom: 15px !important;
+                font-size: 9pt !important;
+            }
+            .print-table thead {
+                display: table-header-group !important;
+            }
+            .print-table thead tr {
+                background-color: #f3f4f6 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .print-table th {
+                border: 1px solid #000000 !important;
+                padding: 6px 8px !important;
+                text-align: left !important;
+                font-weight: 700 !important;
+                font-size: 8.5pt !important;
+                text-transform: uppercase !important;
+                color: #000000 !important;
+            }
+            .print-table td {
+                border: 1px solid #cccccc !important;
+                padding: 5px 8px !important;
+                font-size: 8.5pt !important;
+                color: #000000 !important;
+                vertical-align: middle !important;
+            }
+            .print-table tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* 7. Summary & Signature Blocks */
+            .print-summary {
+                display: block !important;
+                margin-top: 20px !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            .print-summary-table {
+                width: 320px !important;
+                margin-left: auto !important;
+                border: 1px solid #333333 !important;
+                border-collapse: collapse !important;
+            }
+            .print-summary-table th, .print-summary-table td {
+                border: 1px solid #dddddd !important;
+                padding: 5px 10px !important;
+                font-size: 9pt !important;
+            }
+            .print-summary-table th {
+                background-color: #f9fafb !important;
+                text-align: left !important;
+            }
+            .print-summary-table td {
+                text-align: right !important;
+                font-weight: bold !important;
+            }
+
+            .print-signature {
+                display: block !important;
+                margin-top: 30px !important;
+                margin-left: auto !important;
+                width: 250px !important;
+                text-align: center !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            .print-signature p {
+                margin: 3px 0 !important;
+                font-size: 9pt !important;
+            }
+            .print-signature .sign-space {
+                height: 60px !important;
+            }
+            .print-signature .sign-name {
+                font-weight: 700 !important;
+                text-decoration: underline !important;
+            }
+
+            /* Remove shadows, background cards, etc */
+            .bg-white, .shadow-sm, .shadow-md, .shadow-xl, .border {
+                box-shadow: none !important;
+                border: none !important;
+                background: transparent !important;
+            }
         }
+
         @media screen {
-            .print-only { display: none !important; }
+            .print-only {
+                display: none !important;
+            }
         }
     </style>
 
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         
         <!-- Print Header -->
-        <div class="print-only" style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #000; padding-bottom: 15px; margin-bottom: 25px;">
+        <div class="print-only print-header-box">
             <div style="text-align: left;">
-                <h1 style="font-size: 24px; font-weight: bold; margin: 0; text-transform: uppercase; letter-spacing: 1px;">{{ $storeName }}</h1>
+                <h1 style="font-size: 22px; font-weight: bold; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">{{ $storeName }}</h1>
                 @if($storeAddress)
-                    <p style="font-size: 11px; margin: 4px 0 0 0; color: #444;">{{ $storeAddress }}</p>
+                    <p style="font-size: 10.5px; margin: 3px 0 0 0; color: #333;">{{ $storeAddress }}</p>
                 @endif
             </div>
             <div style="text-align: right;">
-                <h2 style="font-size: 18px; font-weight: bold; margin: 0; color: #111; text-transform: uppercase;">
+                <h2 style="font-size: 16px; font-weight: bold; margin: 0; color: #111; text-transform: uppercase;">
                     {{ $selectedDate ? 'Laporan Penjualan Harian' : 'Laporan Penjualan' }}
                 </h2>
-                <p style="font-size: 11px; margin: 4px 0 0 0; color: #444;">
+                <p style="font-size: 10.5px; margin: 3px 0 0 0; color: #333;">
                     @if($selectedDate)
                         Tanggal: {{ \Carbon\Carbon::parse($selectedDate)->locale('id')->isoFormat('dddd, D MMMM Y') }}
                     @else
@@ -376,7 +509,7 @@
 
         <!-- Print Summary Table -->
         <div class="print-summary print-only">
-            <table>
+            <table class="print-summary-table">
                 <tr>
                     <th>Total Pesanan Selesai:</th>
                     <td>{{ $totalOrders }} Pesanan</td>

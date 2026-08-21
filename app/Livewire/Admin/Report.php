@@ -179,7 +179,8 @@ class Report extends Component
 
     public function exportCsv()
     {
-        $filename = 'Laporan_Penjualan_' . ($this->selectedDate ? $this->selectedDate : $this->startDate . '_sd_' . $this->endDate) . '.csv';
+        $dateSuffix = $this->selectedDate ? $this->selectedDate : $this->startDate . '_sd_' . $this->endDate;
+        $filename = 'Laporan_Penjualan_' . $dateSuffix . '.xls';
 
         if ($this->selectedDate) {
             $exportQuery = Order::where('status', 'completed')
@@ -201,7 +202,7 @@ class Report extends Component
             ->get();
 
         $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
@@ -209,69 +210,110 @@ class Report extends Component
         ];
 
         $storeName = $this->storeName;
+        $storeAddress = $this->storeAddress;
         $selectedDate = $this->selectedDate;
         $startDate = $this->startDate;
         $endDate = $this->endDate;
+        $totalOrdersCount = $ordersToExport->count();
+        $totalRevenueSum = $ordersToExport->sum('total_amount');
 
-        $callback = function() use ($ordersToExport, $storeName, $selectedDate, $startDate, $endDate) {
-            $file = fopen('php://output', 'w');
-            // Write UTF-8 BOM so Excel opens indonesian characters and currencies correctly
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+        $callback = function() use ($ordersToExport, $storeName, $storeAddress, $selectedDate, $startDate, $endDate, $totalOrdersCount, $totalRevenueSum) {
+            echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+            echo '<head>';
+            echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
+            echo '<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Laporan Penjualan</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->';
+            echo '<style>';
+            echo 'body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #1f2937; }';
+            echo 'table { border-collapse: collapse; width: 100%; }';
+            echo '.header-title { font-size: 16pt; font-weight: bold; color: #c2410c; }';
+            echo '.header-subtitle { font-size: 10pt; color: #4b5563; }';
+            echo '.meta-table td { padding: 4px 8px; border: none; font-size: 10pt; }';
+            echo '.meta-label { font-weight: bold; width: 140px; }';
+            echo 'th { background-color: #ea580c; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #c2410c; padding: 10px 8px; font-size: 10.5pt; }';
+            echo 'td { border: 1px solid #d1d5db; padding: 6px 8px; font-size: 10pt; vertical-align: middle; }';
+            echo '.text-center { text-align: center; }';
+            echo '.text-right { text-align: right; }';
+            echo '.font-bold { font-weight: bold; }';
+            echo '.total-row td { background-color: #ffedd5; font-weight: bold; border-top: 2px solid #ea580c; border-bottom: 2px solid #ea580c; font-size: 11pt; }';
+            echo '</style>';
+            echo '</head>';
+            echo '<body>';
 
-            fputcsv($file, [$storeName, 'LAPORAN PENJUALAN']);
-            if ($selectedDate) {
-                fputcsv($file, ['Filter Tanggal', Carbon::parse($selectedDate)->locale('id')->isoFormat('dddd, D MMMM Y')]);
-            } else {
-                fputcsv($file, ['Periode Laporan', Carbon::parse($startDate)->format('d/m/Y') . ' - ' . Carbon::parse($endDate)->format('d/m/Y')]);
+            // Top Store Header
+            echo '<table>';
+            echo '<tr><td colspan="8" class="header-title">' . htmlspecialchars($storeName) . '</td></tr>';
+            if ($storeAddress) {
+                echo '<tr><td colspan="8" class="header-subtitle">' . htmlspecialchars($storeAddress) . '</td></tr>';
             }
-            fputcsv($file, ['Total Pesanan', $ordersToExport->count() . ' Pesanan']);
-            fputcsv($file, ['Total Pendapatan', 'Rp ' . number_format($ordersToExport->sum('total_amount'), 0, ',', '.')]);
-            fputcsv($file, ['Tanggal Unduh', Carbon::now()->locale('id')->isoFormat('D MMMM Y, HH:mm') . ' WIB']);
-            fputcsv($file, []); // Empty line
+            echo '<tr><td colspan="8" style="font-size: 13pt; font-weight: bold; padding-top: 10px; color: #111827;">LAPORAN PENJUALAN</td></tr>';
+            
+            if ($selectedDate) {
+                echo '<tr><td colspan="2" class="meta-label">Filter Tanggal:</td><td colspan="6">' . htmlspecialchars(Carbon::parse($selectedDate)->locale('id')->isoFormat('dddd, D MMMM Y')) . '</td></tr>';
+            } else {
+                echo '<tr><td colspan="2" class="meta-label">Periode Laporan:</td><td colspan="6">' . htmlspecialchars(Carbon::parse($startDate)->locale('id')->isoFormat('D MMM Y') . ' s/d ' . Carbon::parse($endDate)->locale('id')->isoFormat('D MMM Y')) . '</td></tr>';
+            }
+            echo '<tr><td colspan="2" class="meta-label">Total Pesanan:</td><td colspan="6">' . $totalOrdersCount . ' Pesanan</td></tr>';
+            echo '<tr><td colspan="2" class="meta-label">Total Pendapatan:</td><td colspan="6">Rp ' . number_format($totalRevenueSum, 0, ',', '.') . '</td></tr>';
+            echo '<tr><td colspan="2" class="meta-label">Tanggal Unduh:</td><td colspan="6">' . htmlspecialchars(Carbon::now()->locale('id')->isoFormat('D MMMM Y, HH:mm')) . ' WIB</td></tr>';
+            echo '<tr><td colspan="8" style="height: 15px;"></td></tr>';
+            echo '</table>';
 
-            fputcsv($file, [
-                'No. Order',
-                'Waktu Pesanan',
-                'No. Meja',
-                'Nama Pemesan',
-                'Rincian Menu & Qty',
-                'Diskon / Promo',
-                'Total Nominal (Rp)',
-                'Status'
-            ]);
+            // Data Table
+            echo '<table>';
+            echo '<thead>';
+            echo '<tr>';
+            echo '<th style="width: 90px;">No. Order</th>';
+            echo '<th style="width: 140px;">Waktu</th>';
+            echo '<th style="width: 70px;">Meja</th>';
+            echo '<th style="width: 130px;">Nama Pemesan</th>';
+            echo '<th style="width: 320px;">Rincian Menu & Qty</th>';
+            echo '<th style="width: 130px;">Diskon / Promo</th>';
+            echo '<th style="width: 120px;">Total (Rp)</th>';
+            echo '<th style="width: 90px;">Status</th>';
+            echo '</tr>';
+            echo '</thead>';
+            echo '<tbody>';
 
             foreach ($ordersToExport as $order) {
                 $itemDetails = [];
                 foreach ($order->orderDetails as $detail) {
                     $name = $detail->menu ? $detail->menu->name : ($detail->bundle ? $detail->bundle->name : 'Menu');
-                    $itemDetails[] = $name . ' (x' . $detail->quantity . ')';
+                    $itemDetails[] = htmlspecialchars($name) . ' (x' . $detail->quantity . ')';
                 }
-                $itemsStr = implode(', ', $itemDetails);
+                $itemsStr = implode('<br/>', $itemDetails);
 
                 $promoStr = '-';
                 if ($order->discount_amount > 0) {
                     $promoStr = 'Rp ' . number_format($order->discount_amount, 0, ',', '.');
                     if ($order->promotion) {
-                        $promoStr .= ' (' . $order->promotion->name . ')';
+                        $promoStr .= '<br/><small>' . htmlspecialchars($order->promotion->name) . '</small>';
                     }
                 }
 
-                fputcsv($file, [
-                    '#' . str_pad($order->id, 5, '0', STR_PAD_LEFT),
-                    $order->created_at->format('d/m/Y H:i'),
-                    $order->table ? $order->table->table_number : '-',
-                    $order->customer_name ?: '-',
-                    $itemsStr ?: '-',
-                    $promoStr,
-                    $order->total_amount,
-                    'Selesai'
-                ]);
+                echo '<tr>';
+                echo '<td class="text-center font-bold">#' . str_pad($order->id, 5, '0', STR_PAD_LEFT) . '</td>';
+                echo '<td class="text-center">' . $order->created_at->format('d/m/Y H:i') . '</td>';
+                echo '<td class="text-center font-bold">' . htmlspecialchars($order->table ? $order->table->table_number : '-') . '</td>';
+                echo '<td>' . htmlspecialchars($order->customer_name ?: '-') . '</td>';
+                echo '<td>' . ($itemsStr ?: '-') . '</td>';
+                echo '<td class="text-center">' . $promoStr . '</td>';
+                echo '<td class="text-right font-bold">Rp ' . number_format($order->total_amount, 0, ',', '.') . '</td>';
+                echo '<td class="text-center" style="color: #059669; font-weight: bold;">Selesai</td>';
+                echo '</tr>';
             }
 
-            fputcsv($file, []);
-            fputcsv($file, ['', '', '', '', 'TOTAL AKHIR', '', $ordersToExport->sum('total_amount'), '']);
+            // Total Summary Row
+            echo '<tr class="total-row">';
+            echo '<td colspan="4" class="text-right">TOTAL KESELURUHAN:</td>';
+            echo '<td colspan="2" class="text-center">' . $totalOrdersCount . ' Pesanan</td>';
+            echo '<td class="text-right">Rp ' . number_format($totalRevenueSum, 0, ',', '.') . '</td>';
+            echo '<td></td>';
+            echo '</tr>';
 
-            fclose($file);
+            echo '</tbody>';
+            echo '</table>';
+            echo '</body>';
+            echo '</html>';
         };
 
         return response()->streamDownload($callback, $filename, $headers);

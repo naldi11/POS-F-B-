@@ -79,6 +79,15 @@ class Checkout extends Component
 
     public function calculateTotal()
     {
+        // Validasi jika promo memiliki minimal pembelian tapi subtotal tidak cukup
+        if ($this->appliedPromo) {
+            $minPurchase = (float) ($this->appliedPromo->min_purchase ?? 0);
+            if ($minPurchase > 0 && $this->subtotal < $minPurchase) {
+                $this->removePromo();
+                $this->addError('promoCodeInput', 'Promo dibatalkan karena total belanja kurang dari batas minimal Rp ' . number_format($minPurchase, 0, ',', '.'));
+            }
+        }
+
         $this->total = $this->subtotal - $this->discountAmount;
         
         if ($this->usePoints && $this->customerPoints > 0) {
@@ -123,37 +132,94 @@ class Checkout extends Component
     {
         $this->resetErrorBag('promoCodeInput');
         
-        $promo = \App\Models\EventPromotion::where('coupon_code', strtoupper($this->promoCodeInput))
+        $code = strtoupper(trim($this->promoCodeInput));
+        if (empty($code)) {
+            $this->addError('promoCodeInput', 'Masukkan kode promo terlebih dahulu.');
+            return;
+        }
+
+        // 1. Cek di tabel Promotion (Voucher Kode Diskon Marketing)
+        $promo = \App\Models\Promotion::where('code', $code)
             ->where('is_active', true)
             ->where(function($query) {
-                $query->whereNull('start_date')->orWhere('start_date', '<=', now());
+                $query->whereNull('valid_from')->orWhere('valid_from', '<=', now());
             })
             ->where(function($query) {
-                $query->whereNull('end_date')->orWhere('end_date', '>=', now());
+                $query->whereNull('valid_until')->orWhere('valid_until', '>=', now());
             })
             ->first();
+
+        $isEvent = false;
+
+        // 2. Jika tidak ditemukan, cek di tabel EventPromotion (Promo Event / Banner)
+        if (!$promo) {
+            $promo = \App\Models\EventPromotion::where('coupon_code', $code)
+                ->where('is_active', true)
+                ->where(function($query) {
+                    $query->whereNull('start_date')->orWhere('start_date', '<=', now());
+                })
+                ->where(function($query) {
+                    $query->whereNull('end_date')->orWhere('end_date', '>=', now());
+                })
+                ->first();
+            if ($promo) {
+                $isEvent = true;
+            }
+        }
 
         if (!$promo) {
             $this->addError('promoCodeInput', 'Kode promo tidak valid atau kadaluarsa.');
             return;
         }
 
-        if (!is_null($promo->usage_limit) && $promo->used_count >= $promo->usage_limit) {
-            $this->addError('promoCodeInput', 'Mohon maaf, kuota penggunaan kode promo ini sudah habis.');
+        // Validasi kuota pemakaian
+        if (!$isEvent) {
+            if (!is_null($promo->max_uses) && $promo->used_count >= $promo->max_uses) {
+                $this->addError('promoCodeInput', 'Mohon maaf, kuota penggunaan kode promo ini sudah habis.');
+                return;
+            }
+        } else {
+            if (!is_null($promo->usage_limit) && $promo->used_count >= $promo->usage_limit) {
+                $this->addError('promoCodeInput', 'Mohon maaf, kuota penggunaan kode promo ini sudah habis.');
+                return;
+            }
+        }
+
+        // Validasi Minimal Order / Minimal Pembelian (min_purchase)
+        $minPurchase = (float) ($promo->min_purchase ?? 0);
+        if ($minPurchase > 0 && $this->subtotal < $minPurchase) {
+            $this->addError('promoCodeInput', 'Minimal pembelian untuk promo ini adalah Rp ' . number_format($minPurchase, 0, ',', '.') . '. Total belanja Anda: Rp ' . number_format($this->subtotal, 0, ',', '.'));
             return;
         }
 
-        $this->appliedPromo = $promo;
-        
-        $this->discountAmount = ($this->subtotal * $promo->discount_percentage) / 100;
+        // Hitung nominal diskon
+        if (!$isEvent) {
+            if ($promo->type === 'percentage') {
+                $this->discountAmount = ($this->subtotal * (float) $promo->value) / 100;
+                if (!is_null($promo->max_discount) && (float) $promo->max_discount > 0 && $this->discountAmount > (float) $promo->max_discount) {
+                    $this->discountAmount = (float) $promo->max_discount;
+                }
+            } else {
+                $this->discountAmount = (float) $promo->value;
+            }
+        } else {
+            $this->discountAmount = ($this->subtotal * (float) $promo->discount_percentage) / 100;
+        }
 
         if ($this->discountAmount > $this->subtotal) {
             $this->discountAmount = $this->subtotal;
         }
 
+        $this->appliedPromo = (object) [
+            'id' => $promo->id,
+            'code' => $isEvent ? $promo->coupon_code : $promo->code,
+            'is_event' => $isEvent,
+            'min_purchase' => $minPurchase,
+        ];
+
         $this->promoCodeInput = '';
         $this->calculateTotal();
-        session()->flash('promo_message', 'Kode Promo berhasil digunakan!');
+        session()->flash('promo_message', 'Kode Promo ' . ($isEvent ? $promo->coupon_code : $promo->code) . ' berhasil digunakan!');
     }
 
     public function removePromo()
@@ -167,28 +233,70 @@ class Checkout extends Component
     {
         $this->validate();
 
+        // Cek apakah meja sedang digunakan
+        if ($this->is_occupied) {
+            $this->addError('table_number', 'Meja ' . $this->table_number . ' saat ini masih terisi. Silakan hubungi kasir.');
+            session()->flash('error', 'Meja ' . $this->table_number . ' saat ini masih digunakan oleh pelanggan lain. Silakan lapor ke kasir untuk konfirmasi meja kosong.');
+            return;
+        }
+
         DB::beginTransaction();
 
         try {
             // Re-validate and lock promo if applied
+            $orderPromoId = null;
             if ($this->appliedPromo) {
-                $promo = \App\Models\EventPromotion::where('id', $this->appliedPromo->id)->lockForUpdate()->first();
-                if (!$promo || (!is_null($promo->usage_limit) && $promo->used_count >= $promo->usage_limit)) {
+                $isEvent = $this->appliedPromo->is_event ?? false;
+                $promoId = $this->appliedPromo->id;
+                $minPurchase = (float) ($this->appliedPromo->min_purchase ?? 0);
+
+                if ($minPurchase > 0 && $this->subtotal < $minPurchase) {
                     DB::rollBack();
                     $this->removePromo();
-                    $this->addError('promoCodeInput', 'Mohon maaf, kuota promo baru saja habis. Silakan checkout ulang tanpa promo.');
+                    $this->addError('promoCodeInput', 'Minimal pembelian untuk promo ini tidak terpenuhi (Min. Rp ' . number_format($minPurchase, 0, ',', '.') . ').');
                     return;
                 }
-                // Increment usage
-                $promo->increment('used_count');
+
+                if ($isEvent) {
+                    $promo = \App\Models\EventPromotion::where('id', $promoId)->lockForUpdate()->first();
+                    if (!$promo || (!is_null($promo->usage_limit) && $promo->used_count >= $promo->usage_limit)) {
+                        DB::rollBack();
+                        $this->removePromo();
+                        $this->addError('promoCodeInput', 'Mohon maaf, kuota promo baru saja habis. Silakan checkout ulang tanpa promo.');
+                        return;
+                    }
+                    $promo->increment('used_count');
+                    $orderPromoId = $promo->id;
+                } else {
+                    $promo = \App\Models\Promotion::where('id', $promoId)->lockForUpdate()->first();
+                    if (!$promo || (!is_null($promo->max_uses) && $promo->used_count >= $promo->max_uses)) {
+                        DB::rollBack();
+                        $this->removePromo();
+                        $this->addError('promoCodeInput', 'Mohon maaf, kuota promo baru saja habis. Silakan checkout ulang tanpa promo.');
+                        return;
+                    }
+                    $promo->increment('used_count');
+                    $orderPromoId = null; // Disimpan tanpa melanggar FK event_promotions jika FK masih aktif
+                }
             }
 
             // Find or create table
-            $table = \App\Models\Table::firstOrCreate(
-                ['table_number' => $this->table_number],
-                ['status' => 'occupied']
-            );
-            $table->update(['status' => 'occupied']);
+            $table = \App\Models\Table::where('table_number', $this->table_number)->first();
+            if (!$table) {
+                $table = \App\Models\Table::create([
+                    'table_number' => $this->table_number,
+                    'status' => 'occupied'
+                ]);
+            } else {
+                if ($table->status === 'occupied' || $table->orders()->whereNotIn('status', ['completed', 'cancelled'])->exists()) {
+                    DB::rollBack();
+                    $this->is_occupied = true;
+                    $this->addError('table_number', 'Meja ' . $this->table_number . ' saat ini masih terisi. Silakan hubungi kasir.');
+                    session()->flash('error', 'Meja ' . $this->table_number . ' saat ini masih digunakan oleh pelanggan lain. Silakan lapor ke kasir untuk konfirmasi meja kosong.');
+                    return;
+                }
+                $table->update(['status' => 'occupied']);
+            }
 
             // Find or create customer
             $customer = \App\Models\Customer::firstOrCreate(
@@ -215,7 +323,7 @@ class Checkout extends Component
                 'customer_phone' => $this->customer_phone,
                 'total_amount' => $this->total,
                 'status' => 'waiting_verification',
-                'promotion_id' => $this->appliedPromo ? $this->appliedPromo->id : null,
+                'promotion_id' => $orderPromoId,
                 'discount_amount' => $this->discountAmount,
                 'points_earned' => $pointsEarned,
                 'points_redeemed' => $pointsRedeemed,
@@ -246,8 +354,9 @@ class Checkout extends Component
 
             DB::commit();
 
-            // Broadcast NewOrder
+            // Broadcast NewOrder & TableUpdated
             \App\Events\NewOrder::dispatch($order);
+            \App\Events\TableUpdated::dispatch($table);
 
             // Clear session cart
             session()->forget('cart');

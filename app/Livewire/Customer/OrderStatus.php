@@ -61,6 +61,7 @@ class OrderStatus extends Component
     {
         if ($this->order && $this->order->table) {
             $this->order->table->update(['status' => 'available']);
+            \App\Events\TableUpdated::dispatch($this->order->table);
         }
 
         Session::forget('table_id');

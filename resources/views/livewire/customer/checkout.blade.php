@@ -29,7 +29,7 @@
                 </div>
                 @if($appliedPromo)
                     <div class="flex justify-between items-center text-green-600">
-                        <span class="text-sm">Diskon ({{ $appliedPromo->code }})</span>
+                        <span class="text-sm">Diskon ({{ is_object($appliedPromo) ? $appliedPromo->code : ($appliedPromo['code'] ?? '') }})</span>
                         <span class="font-medium">- Rp {{ number_format($discountAmount, 0, ',', '.') }}</span>
                     </div>
                 @endif
@@ -52,7 +52,7 @@
                     <div class="flex justify-between items-center bg-green-50 px-3 py-2 rounded-lg border border-green-100">
                         <div class="flex items-center text-green-700 text-sm font-medium">
                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            Promo {{ $appliedPromo->code }} aktif
+                            Promo {{ is_object($appliedPromo) ? $appliedPromo->code : ($appliedPromo['code'] ?? '') }} aktif
                         </div>
                         <button type="button" wire:click="removePromo" class="text-red-500 hover:text-red-700 text-xs font-medium px-2 py-1">Hapus</button>
                     </div>
@@ -68,9 +68,12 @@
                     <input type="text" id="table_number" wire:model="table_number" readonly class="w-full bg-gray-100 border border-gray-200 text-gray-600 font-bold text-sm rounded-xl block p-3 cursor-not-allowed">
                     <p class="text-xs text-gray-500 mt-1">Nomor meja otomatis terisi dari hasil scan QR Code.</p>
                     @if($is_occupied)
-                        <div class="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start space-x-2">
-                            <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <p class="text-xs text-amber-800 font-medium">Meja ini saat ini berstatus <strong>Terisi</strong>. Pesanan Anda tetap akan dicatat sebagai pesanan terpisah untuk meja ini.</p>
+                        <div class="mt-2 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start space-x-2.5">
+                            <svg class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <div>
+                                <h4 class="text-xs font-bold text-red-800">Meja Masih Terisi</h4>
+                                <p class="text-xs text-red-700 mt-0.5 leading-relaxed">Meja ini masih tercatat digunakan oleh pelanggan sebelumnya. Silakan hubungi kasir/staf Rumpo Cafe untuk konfirmasi meja kosong sebelum memesan.</p>
+                            </div>
                         </div>
                     @endif
                     @error('table_number') <span class="text-red-500 text-xs italic mt-1 block">{{ $message }}</span> @enderror
@@ -177,10 +180,19 @@
             <!-- Checkout Button -->
             <div class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
                 <div class="max-w-md mx-auto">
-                    <button type="submit" wire:loading.attr="disabled" class="w-full flex justify-center items-center space-x-2 bg-orange-500 text-white font-bold py-3 px-6 rounded-2xl shadow-lg hover:bg-orange-600 transition transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100">
-                        <span wire:loading.remove wire:target="processCheckout">Selesaikan Pesanan</span>
-                        <span wire:loading wire:target="processCheckout">Memproses...</span>
-                    </button>
+                    @if($is_occupied)
+                        <div class="mb-2 text-center text-xs font-bold text-red-600 bg-red-50 py-1.5 px-3 rounded-xl border border-red-100">
+                            Meja masih terisi. Harap hubungi kasir terlebih dahulu.
+                        </div>
+                        <button type="button" disabled class="w-full flex justify-center items-center space-x-2 bg-gray-300 text-gray-500 font-bold py-3 px-6 rounded-2xl cursor-not-allowed">
+                            <span>Meja Belum Tersedia</span>
+                        </button>
+                    @else
+                        <button type="submit" wire:loading.attr="disabled" class="w-full flex justify-center items-center space-x-2 bg-orange-500 text-white font-bold py-3 px-6 rounded-2xl shadow-lg hover:bg-orange-600 transition transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100">
+                            <span wire:loading.remove wire:target="processCheckout">Selesaikan Pesanan</span>
+                            <span wire:loading wire:target="processCheckout">Memproses...</span>
+                        </button>
+                    @endif
                 </div>
             </div>
         </form>

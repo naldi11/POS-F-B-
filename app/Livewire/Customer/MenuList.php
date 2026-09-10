@@ -31,6 +31,24 @@ class MenuList extends Component
         }
         $this->table_number = session('table_number');
 
+        if ($this->table_number) {
+            $table = Table::where('table_number', $this->table_number)->first();
+            if (!$table || $table->status === 'maintenance') {
+                session()->forget(['table_id', 'table_number']);
+                return redirect()->route('welcome');
+            }
+
+            // Jika meja berstatus occupied atau ada pesanan aktif yang belum selesai
+            if ($table->status === 'occupied' || $table->orders()->whereNotIn('status', ['completed', 'cancelled'])->exists()) {
+                session()->forget(['table_id', 'table_number', 'cart']);
+                return redirect()->route('welcome', ['table' => $this->table_number]);
+            }
+
+            session(['table_id' => $table->id]);
+        } else {
+            return redirect()->route('welcome');
+        }
+
         $this->categories = Category::where('is_active', true)->get();
     }
 

@@ -69,6 +69,9 @@
                                 @if($event->discount_percentage > 0)
                                     <span class="text-xs font-bold text-green-600 ml-1">Diskon {{ $event->discount_percentage }}%</span>
                                 @endif
+                                @if(($event->min_purchase ?? 0) > 0)
+                                    <div class="text-[11px] text-gray-500 mt-0.5">Min. Beli: Rp {{ number_format($event->min_purchase, 0, ',', '.') }}</div>
+                                @endif
                                 @if(!$event->coupon_code && $event->discount_percentage <= 0)
                                     <span class="text-gray-400 text-xs">-</span>
                                 @endif
@@ -148,13 +151,17 @@
                         <textarea wire:model="description" rows="2" placeholder="Jelaskan detail event promo..." class="w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm"></textarea>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-4">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Diskon (%)</label>
                             <input type="number" step="0.01" wire:model="discount_percentage" placeholder="0" class="w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Batas Pengguna</label>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Min. Belanja (Rp)</label>
+                            <input type="number" step="0.01" wire:model="min_purchase" placeholder="0" class="w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Batas Kuota</label>
                             <input type="number" wire:model="usage_limit" placeholder="Batas Promo" class="w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
                         </div>
                         <div x-data="{ isDropping: false }"

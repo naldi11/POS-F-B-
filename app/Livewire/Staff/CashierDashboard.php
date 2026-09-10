@@ -56,8 +56,19 @@ class CashierDashboard extends Component
         return $query->orderBy('created_at', 'desc')->get();
     }
 
+    public $showTablePanel = false;
+
+    #[\Livewire\Attributes\Computed]
+    public function tables()
+    {
+        return \App\Models\Table::withCount(['orders as active_orders_count' => function ($q) {
+            $q->whereNotIn('status', ['completed', 'cancelled']);
+        }])->orderByRaw('CAST(table_number AS UNSIGNED), table_number')->get();
+    }
+
     #[On('echo:orders,NewOrder')]
     #[On('echo:orders,OrderUpdated')]
+    #[On('echo:tables,TableUpdated')]
     public function refreshOrders()
     {
         unset($this->orders);
@@ -91,9 +102,42 @@ class CashierDashboard extends Component
             ->whereNotIn('status', ['completed', 'cancelled'])
             ->exists();
 
-        $table->update([
-            'status' => $hasActiveOrders ? 'occupied' : 'available'
-        ]);
+        $newStatus = $hasActiveOrders ? 'occupied' : 'available';
+        if ($table->status !== $newStatus) {
+            $table->update(['status' => $newStatus]);
+            \App\Events\TableUpdated::dispatch($table);
+        }
+    }
+
+    /**
+     * Kasir mengonfirmasi meja kosong dan membuka kembali meja untuk pelanggan baru.
+     */
+    public function forceReleaseTable($tableId)
+    {
+        $table = \App\Models\Table::find($tableId);
+        if (!$table) return;
+
+        // Selesaikan pesanan yang masih menggantung di meja ini
+        $activeOrders = Order::where('table_id', $tableId)
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->get();
+
+        foreach ($activeOrders as $order) {
+            $order->update(['status' => 'completed']);
+            if ($order->customer_id && $order->points_earned > 0) {
+                $customer = \App\Models\Customer::find($order->customer_id);
+                if ($customer) {
+                    $customer->increment('points', $order->points_earned);
+                }
+            }
+            \App\Events\OrderUpdated::dispatch($order);
+        }
+
+        $table->update(['status' => 'available']);
+        \App\Events\TableUpdated::dispatch($table);
+
+        unset($this->orders);
+        session()->flash('table_message', 'Meja ' . $table->table_number . ' berhasil dikosongkan dan siap digunakan pelanggan baru.');
     }
 
     public function completeOrder($orderId)

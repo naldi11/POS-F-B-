@@ -19,6 +19,7 @@ class EventPromotion extends Model
         'usage_limit',
         'used_count',
         'discount_percentage',
+        'min_purchase',
         'start_date',
         'end_date',
         'is_active',

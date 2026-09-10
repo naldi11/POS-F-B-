@@ -109,6 +109,7 @@ CREATE TABLE `event_promotions` (
     `banner_image` VARCHAR(255) NULL DEFAULT NULL,
     `coupon_code` VARCHAR(50) NULL DEFAULT NULL,
     `discount_percentage` DECIMAL(5, 2) NOT NULL DEFAULT 0,
+    `min_purchase` DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
     `usage_limit` INT NULL DEFAULT NULL,
     `start_date` TIMESTAMP NULL DEFAULT NULL,
     `end_date` TIMESTAMP NULL DEFAULT NULL,

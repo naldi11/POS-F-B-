@@ -54,6 +54,72 @@
         });
     </script>
 
+    @if (session()->has('table_message'))
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" class="bg-green-100 border-l-4 border-green-500 text-green-800 p-4 mb-6 rounded-xl shadow-sm flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span class="font-medium text-sm">{{ session('table_message') }}</span>
+            </div>
+            <button @click="show = false" class="text-green-600 hover:text-green-800 text-sm font-bold">&times;</button>
+        </div>
+    @endif
+
+    <!-- Quick Table Management Panel -->
+    <div class="bg-white rounded-2xl p-4 mb-6 border border-gray-200 shadow-sm" x-data="{ openTables: false }">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-orange-100 text-orange-600 rounded-xl">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900 text-sm">Status &amp; Konfirmasi Meja</h3>
+                    @php
+                        $occupiedCount = $this->tables->where('status', 'occupied')->count();
+                        $availableCount = $this->tables->where('status', 'available')->count();
+                    @endphp
+                    <div class="flex items-center gap-2 text-xs mt-0.5">
+                        <span class="inline-flex items-center gap-1 font-semibold text-red-600">
+                            <span class="w-2 h-2 rounded-full bg-red-500"></span> {{ $occupiedCount }} Meja Terisi
+                        </span>
+                        <span class="text-gray-300">•</span>
+                        <span class="inline-flex items-center gap-1 font-semibold text-green-600">
+                            <span class="w-2 h-2 rounded-full bg-green-500"></span> {{ $availableCount }} Meja Kosong
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <button @click="openTables = !openTables" class="text-xs font-bold text-orange-600 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                <span x-text="openTables ? 'Tutup Daftar Meja' : 'Buka / Konfirmasi Meja (' + {{ $this->tables->count() }} + ')'"></span>
+                <svg class="w-4 h-4 transform transition-transform" :class="openTables ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+        </div>
+
+        <!-- Table Grid List (Collapsible) -->
+        <div x-show="openTables" x-collapse class="mt-4 pt-4 border-t border-gray-100 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
+            @foreach($this->tables as $t)
+                <div class="p-2.5 rounded-xl border {{ $t->status === 'occupied' ? 'bg-red-50/70 border-red-200 shadow-sm' : 'bg-green-50/40 border-green-200' }} flex flex-col justify-between transition">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="font-extrabold text-sm {{ $t->status === 'occupied' ? 'text-red-900' : 'text-green-900' }}">Meja {{ $t->table_number }}</span>
+                        <span class="w-2 h-2 rounded-full {{ $t->status === 'occupied' ? 'bg-red-500 animate-pulse' : 'bg-green-500' }}"></span>
+                    </div>
+                    <div class="text-[11px] mb-2 font-medium {{ $t->status === 'occupied' ? 'text-red-700' : 'text-green-700' }}">
+                        {{ $t->status === 'occupied' ? 'Sedang Terisi' : 'Tersedia (Kosong)' }}
+                    </div>
+                    @if($t->status === 'occupied')
+                        <button 
+                            wire:click="forceReleaseTable({{ $t->id }})" 
+                            wire:confirm="Konfirmasi Meja {{ $t->table_number }} sudah kosong dan buka kembali untuk pelanggan baru?"
+                            class="w-full bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold py-1.5 px-2 rounded-lg text-xs transition shadow-sm text-center"
+                        >
+                            Kosongkan Meja
+                        </button>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse($this->orders as $order)
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
@@ -160,10 +226,17 @@
                             @endif
                         </div>
                     @elseif($order->status === 'completed')
-                        <a href="{{ route('order.print', $order->id) }}" target="_blank" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg transition text-sm flex justify-center items-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                            <span>Cetak Struk</span>
-                        </a>
+                        <div class="flex space-x-2">
+                            <a href="{{ route('order.print', $order->id) }}" target="_blank" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg transition text-sm flex justify-center items-center space-x-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                <span>Cetak Struk</span>
+                            </a>
+                            @if($order->table && $order->table->status === 'occupied')
+                                <button wire:click="forceReleaseTable({{ $order->table->id }})" wire:confirm="Konfirmasi Meja {{ $order->table->table_number }} sudah kosong?" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition text-xs flex justify-center items-center text-center">
+                                    Kosongkan Meja
+                                </button>
+                            @endif
+                        </div>
                     @endif
                 </div>
             </div>

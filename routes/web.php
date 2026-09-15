@@ -29,9 +29,29 @@ Route::get('/order/{id}/print', \App\Http\Controllers\OrderPrintController::clas
 // =============================================================
 Route::domain(env('ADMIN_DOMAIN', 'login.rumpocafe.site'))->group(function () {
 
-    // Halaman utama subdomain redirect ke dashboard atau login
+    // Halaman utama subdomain redirect ke dashboard atau login (kecuali jika ada scan QR meja)
     Route::get('/', function () {
+        if (request()->has('table')) {
+            $customerHost = preg_replace('/^login\./i', '', request()->getHost());
+            $scheme = request()->getScheme();
+            $port = request()->getPort();
+            $portStr = ($port && !in_array($port, [80, 443])) ? ':' . $port : '';
+            return redirect()->to($scheme . '://' . $customerHost . $portStr . '/?table=' . urlencode(request()->query('table')));
+        }
+
         return redirect()->route('dashboard');
+    });
+
+    // Jika tautan menu dibuka di subdomain admin (misal scan QR lama)
+    Route::get('/menu', function () {
+        $customerHost = preg_replace('/^login\./i', '', request()->getHost());
+        $scheme = request()->getScheme();
+        $port = request()->getPort();
+        $portStr = ($port && !in_array($port, [80, 443])) ? ':' . $port : '';
+        if (request()->has('table')) {
+            return redirect()->to($scheme . '://' . $customerHost . $portStr . '/?table=' . urlencode(request()->query('table')));
+        }
+        return redirect()->to($scheme . '://' . $customerHost . $portStr . '/menu');
     });
 
     // Dashboard

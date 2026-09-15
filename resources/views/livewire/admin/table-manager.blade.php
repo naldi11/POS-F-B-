@@ -33,12 +33,18 @@
 
     <!-- Daftar Meja -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Daftar Meja</h3>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+            <h3 class="text-lg font-bold text-gray-900">Daftar Meja</h3>
+            <span class="text-xs text-gray-500 flex items-center gap-1.5 bg-orange-50/80 border border-orange-200/80 text-orange-700 px-3 py-1.5 rounded-lg w-fit">
+                <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                Domain Pemesanan Pelanggan: <span class="font-mono font-bold">{{ $customerBaseUrl }}</span>
+            </span>
+        </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @forelse($tables as $table)
                 @php
-                    $fullUrl = url('/menu') . '?table=' . urlencode(trim($table->table_number));
+                    $fullUrl = $customerBaseUrl . '/?table=' . urlencode(trim($table->table_number));
                     
                     // Preview SVG
                     $qrSvgPreview = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(120)->margin(1)->generate($fullUrl);

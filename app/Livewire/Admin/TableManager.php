@@ -41,11 +41,48 @@ class TableManager extends Component
         session()->flash('message', 'Meja berhasil dihapus.');
     }
 
+    public function getCustomerBaseUrl(): string
+    {
+        $host = request()->getHost();
+        $adminDomain = env('ADMIN_DOMAIN', 'login.rumpocafe.site');
+
+        // Jika diakses dari subdomain admin (misal: login.rumpocafe.site)
+        if (str_starts_with($host, 'login.')) {
+            $customerHost = substr($host, 6);
+            $scheme = request()->getScheme();
+            $port = request()->getPort();
+            $url = $scheme . '://' . $customerHost;
+            if ($port && !in_array($port, [80, 443])) {
+                $url .= ':' . $port;
+            }
+            return $url;
+        }
+
+        if ($host === $adminDomain) {
+            $customerHost = preg_replace('/^login\./i', '', $adminDomain);
+            return request()->getScheme() . '://' . $customerHost;
+        }
+
+        // Jika local development (localhost, 127.0.0.1, IP, .local, .test)
+        if ($host === 'localhost' || $host === '127.0.0.1' || filter_var($host, FILTER_VALIDATE_IP) || str_ends_with($host, '.local') || str_ends_with($host, '.test')) {
+            return request()->getSchemeAndHttpHost();
+        }
+
+        // Fallback: config('app.url') jika bukan domain admin
+        $appUrl = config('app.url');
+        if (!empty($appUrl) && parse_url($appUrl, PHP_URL_HOST) !== $adminDomain) {
+            return rtrim($appUrl, '/');
+        }
+
+        return rtrim(url('/'), '/');
+    }
+
     public function render()
     {
         $tables = \App\Models\Table::orderByRaw('CAST(table_number AS UNSIGNED), table_number')->get();
         return view('livewire.admin.table-manager', [
-            'tables' => $tables
+            'tables' => $tables,
+            'customerBaseUrl' => $this->getCustomerBaseUrl()
         ]);
     }
 }

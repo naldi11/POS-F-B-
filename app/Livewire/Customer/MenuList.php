@@ -26,6 +26,17 @@ class MenuList extends Component
 
     public function mount()
     {
+        $adminDomain = env('ADMIN_DOMAIN', 'login.rumpocafe.site');
+        if (request()->getHost() === $adminDomain || str_starts_with(request()->getHost(), 'login.')) {
+            $customerHost = preg_replace('/^login\./i', '', request()->getHost());
+            $scheme = request()->getScheme();
+            $port = request()->getPort();
+            $portStr = ($port && !in_array($port, [80, 443])) ? ':' . $port : '';
+            $table = request()->query('table', session('table_number'));
+            $target = $scheme . '://' . $customerHost . $portStr . ($table ? '/?table=' . urlencode($table) : '/menu');
+            return redirect()->to($target);
+        }
+
         if (request()->has('table')) {
             session(['table_number' => request()->query('table')]);
         }

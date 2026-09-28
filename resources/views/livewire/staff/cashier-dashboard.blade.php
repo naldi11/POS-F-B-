@@ -202,10 +202,10 @@
                 <div class="p-4 bg-gray-50 border-t border-gray-100">
                     @if($order->status === 'waiting_verification' && $order->payment && $order->payment->status === 'pending')
                         <div class="flex space-x-2">
-                            <button wire:click="verifyPayment({{ $order->id }}, 'verified')" wire:confirm="Konfirmasi pembayaran VALID?" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-lg transition text-sm text-center">
+                            <button wire:click="verifyPayment({{ $order->id }}, 'verified')" wire:confirm="Konfirmasi pembayaran VALID?" style="height: 38px; font-size: 12px;" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition text-center">
                                 Valid (Terima)
                             </button>
-                            <button wire:click="verifyPayment({{ $order->id }}, 'rejected')" wire:confirm="Tolak pembayaran ini?" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition text-sm text-center">
+                            <button wire:click="verifyPayment({{ $order->id }}, 'rejected')" wire:confirm="Tolak pembayaran ini?" style="height: 38px; font-size: 12px;" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition text-center">
                                 Invalid (Tolak)
                             </button>
                         </div>
@@ -215,59 +215,59 @@
                         </div>
                     @elseif(in_array($order->status, ['verified', 'cooking', 'ready']))
                         <div class="flex space-x-2">
-                            <a href="{{ route('order.print', $order->id) }}" target="_blank" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg transition text-sm flex justify-center items-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                            <a href="{{ route('order.print', $order->id) }}" target="_blank" style="height: 38px; font-size: 12px;" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition flex justify-center items-center space-x-1.5">
+                                <svg width="15" height="15" style="width: 15px; height: 15px; min-width: 15px; max-width: 15px; max-height: 15px; display: inline-block; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                                 <span>Struk</span>
                             </a>
                             
                             @if($order->status === 'verified')
-                                <button wire:click="updateOrderStatus({{ $order->id }}, 'cooking')" class="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 rounded-lg transition text-xs text-center">
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'cooking')" style="height: 38px; font-size: 12px;" class="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg transition text-center">
                                     Mulai Masak
                                 </button>
-                                <button wire:click="updateOrderStatus({{ $order->id }}, 'waiting_confirmation')" wire:confirm="Pesanan langsung diantar ke Meja {{ $order->table->table_number }}?" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg transition text-xs text-center">
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'waiting_confirmation')" wire:confirm="Pesanan langsung diantar ke Meja {{ $order->table->table_number }}?" style="height: 38px; font-size: 12px;" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition text-center">
                                     Sajikan ke Meja
                                 </button>
                             @elseif($order->status === 'cooking')
-                                <button wire:click="updateOrderStatus({{ $order->id }}, 'ready')" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition text-xs text-center">
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'ready')" style="height: 38px; font-size: 12px;" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition text-center">
                                     Siap Saji
                                 </button>
-                                <button wire:click="updateOrderStatus({{ $order->id }}, 'waiting_confirmation')" wire:confirm="Pesanan sudah siap dan diantar ke Meja {{ $order->table->table_number }}?" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg transition text-xs text-center">
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'waiting_confirmation')" wire:confirm="Pesanan sudah siap dan diantar ke Meja {{ $order->table->table_number }}?" style="height: 38px; font-size: 12px;" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition text-center">
                                     Sajikan ke Meja
                                 </button>
                             @elseif($order->status === 'ready')
-                                <button wire:click="updateOrderStatus({{ $order->id }}, 'waiting_confirmation')" wire:confirm="Pesanan sudah siap dan diantar ke Meja {{ $order->table->table_number }}?" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg transition text-xs flex justify-center items-center space-x-1 shadow-sm text-center">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'waiting_confirmation')" wire:confirm="Pesanan sudah siap dan diantar ke Meja {{ $order->table->table_number }}?" style="height: 38px; font-size: 12px;" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition flex justify-center items-center space-x-1 shadow-sm text-center">
+                                    <svg width="15" height="15" style="width: 15px; height: 15px; min-width: 15px; max-width: 15px; max-height: 15px; display: inline-block; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                     <span>Sajikan ke Meja</span>
                                 </button>
                             @endif
                         </div>
                     @elseif($order->status === 'waiting_confirmation')
                         <div class="space-y-2">
-                            <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-center">
-                                <div class="flex items-center justify-center space-x-1.5 text-amber-800 text-xs font-bold mb-0.5">
-                                    <svg class="w-3.5 h-3.5 text-amber-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 10px 12px; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 6px; color: #92400e; font-size: 12px; font-weight: 700; margin-bottom: 2px;">
+                                    <svg width="15" height="15" style="width: 15px; height: 15px; min-width: 15px; max-width: 15px; max-height: 15px; display: inline-block;" class="text-amber-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                                     <span>Menunggu Konfirmasi Pelanggan</span>
                                 </div>
-                                <p class="text-[11px] text-amber-700">Hidangan telah diantar ke Meja {{ $order->table->table_number }}. Menunggu pelanggan konfirmasi.</p>
+                                <p style="margin: 0; font-size: 11px; color: #b45309; line-height: 1.3;">Hidangan telah diantar ke Meja {{ $order->table->table_number }}. Menunggu pelanggan konfirmasi.</p>
                             </div>
-                            <div class="flex space-x-2">
-                                <a href="{{ route('order.print', $order->id) }}" target="_blank" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg transition text-xs flex justify-center items-center space-x-1">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <a href="{{ route('order.print', $order->id) }}" target="_blank" style="flex: 1; height: 38px; padding: 0 12px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; font-weight: 600; text-decoration: none; background-color: #e5e7eb; color: #1f2937;" class="hover:bg-gray-300 transition">
+                                    <svg width="15" height="15" style="width: 15px; height: 15px; min-width: 15px; max-width: 15px; max-height: 15px; display: inline-block; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                                     <span>Struk</span>
                                 </a>
-                                <button wire:click="completeOrder({{ $order->id }})" wire:confirm="Selesaikan pesanan secara manual tanpa menunggu konfirmasi pelanggan?" class="flex-1 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-bold py-2 rounded-lg transition text-xs text-center shadow-sm">
+                                <button wire:click="completeOrder({{ $order->id }})" wire:confirm="Selesaikan pesanan secara manual tanpa menunggu konfirmasi pelanggan?" style="flex: 1; height: 38px; padding: 0 12px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; background-color: #f97316; color: #ffffff;" class="hover:bg-orange-600 active:scale-95 transition text-center shadow-sm">
                                     Selesaikan Manual
                                 </button>
                             </div>
                         </div>
                     @elseif($order->status === 'completed')
-                        <div class="flex space-x-2">
-                            <a href="{{ route('order.print', $order->id) }}" target="_blank" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg transition text-sm flex justify-center items-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <a href="{{ route('order.print', $order->id) }}" target="_blank" style="flex: 1; height: 38px; padding: 0 12px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; font-weight: 600; text-decoration: none; background-color: #e5e7eb; color: #1f2937;" class="hover:bg-gray-300 transition">
+                                <svg width="15" height="15" style="width: 15px; height: 15px; min-width: 15px; max-width: 15px; max-height: 15px; display: inline-block; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                                 <span>Cetak Struk</span>
                             </a>
                             @if($order->table && $order->table->status === 'occupied')
-                                <button wire:click="forceReleaseTable({{ $order->table->id }})" wire:confirm="Konfirmasi Meja {{ $order->table->table_number }} sudah kosong?" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition text-xs flex justify-center items-center text-center">
+                                <button wire:click="forceReleaseTable({{ $order->table->id }})" wire:confirm="Konfirmasi Meja {{ $order->table->table_number }} sudah kosong?" style="flex: 1; height: 38px; padding: 0 12px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; background-color: #dc2626; color: #ffffff;" class="hover:bg-red-700 transition text-center shadow-sm">
                                     Kosongkan Meja
                                 </button>
                             @endif

@@ -375,11 +375,13 @@
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
     >
-        <div class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity" @click="modalOpen = false"></div>
+        <!-- Backdrop -->
+        <div class="fixed inset-0 transition-opacity" style="background-color: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px);" @click="modalOpen = false"></div>
 
         <div class="min-h-full flex items-center justify-center p-4 text-center">
             <div 
-                class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all max-w-sm w-full border border-amber-200"
+                class="relative transform text-left transition-all max-w-sm w-full"
+                style="background-color: #ffffff; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); overflow: hidden; border: none;"
                 x-transition:enter="ease-out duration-300"
                 x-transition:enter-start="opacity-0 translate-y-4 scale-95"
                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
@@ -387,66 +389,81 @@
                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                 x-transition:leave-end="opacity-0 translate-y-4 scale-95"
             >
-                <div class="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 p-6 text-center text-white relative">
+                <!-- Top Header Banner -->
+                <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%); padding: 24px 20px 20px 20px; text-align: center; color: #ffffff; position: relative;">
                     <button 
                         @click="modalOpen = false" 
                         type="button" 
-                        class="absolute top-4 right-4 text-white/80 hover:text-white bg-black/10 hover:bg-black/20 rounded-full p-1.5 transition"
+                        style="position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; background: rgba(0,0,0,0.18); border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #ffffff; border: none; cursor: pointer;"
                         title="Tutup dialog"
                     >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        <svg style="width: 16px; height: 16px; stroke-width: 2.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
 
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md mb-3 shadow-inner">
-                        <svg class="w-10 h-10 text-white animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    <div style="width: 56px; height: 56px; background: rgba(255, 255, 255, 0.22); border-radius: 18px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px; box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);">
+                        <svg style="width: 30px; height: 30px; color: #ffffff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                     </div>
                     
-                    <span class="inline-block px-3 py-0.5 bg-black/20 rounded-full text-[11px] font-black uppercase tracking-wider text-amber-100 mb-1">
-                        Pesanan Telah Tiba
-                    </span>
-                    <h3 class="text-2xl font-black tracking-tight" id="modal-title">Pesanan Sudah Diantar!</h3>
-                    <p class="text-xs text-amber-100 mt-1 font-medium">Staf kami telah menyajikan hidangan ke <span class="font-extrabold text-white underline">Meja {{ $order->table->table_number }}</span></p>
+                    <div>
+                        <span style="display: inline-block; background: rgba(0, 0, 0, 0.22); color: #ffffff; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; padding: 4px 12px; border-radius: 9999px; margin-bottom: 6px;">
+                            Pesanan Tiba di Meja
+                        </span>
+                    </div>
+                    <h3 style="font-size: 20px; font-weight: 900; color: #ffffff; margin: 0 0 4px 0; line-height: 1.2;" id="modal-title">
+                        Pesanan Sudah Diantar!
+                    </h3>
+                    <p style="font-size: 12px; color: #fed7aa; margin: 0; font-weight: 500;">
+                        Disajikan ke <strong style="color: #ffffff; font-weight: 800; text-decoration: underline;">Meja {{ $order->table->table_number }}</strong>
+                    </p>
                 </div>
 
-                <div class="p-6">
-                    <p class="text-xs text-gray-600 mb-4 text-center leading-relaxed">
-                        Silakan periksa hidangan di meja Anda. Jika pesanan sudah lengkap dan sesuai, klik tombol konfirmasi di bawah:
+                <!-- Modal Content -->
+                <div style="padding: 20px; background-color: #ffffff;">
+                    <p style="font-size: 12px; color: #4b5563; text-align: center; margin: 0 0 16px 0; line-height: 1.5; font-weight: 500;">
+                        Silakan periksa hidangan di meja Anda. Jika pesanan sudah lengkap dan sesuai, silakan konfirmasi:
                     </p>
 
-                    <div class="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-3.5 mb-5 max-h-48 overflow-y-auto">
-                        <div class="text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-2 flex items-center justify-between">
-                            <span>Daftar Hidangan Anda:</span>
-                            <span class="text-amber-700 font-semibold">{{ $order->orderDetails->sum('quantity') }} Item</span>
+                    <!-- Food Items Box -->
+                    <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 16px; padding: 14px; margin-bottom: 18px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #fde68a;">
+                            <span style="font-size: 11px; font-weight: 800; color: #92400e; text-transform: uppercase; letter-spacing: 0.05em;">Daftar Hidangan Anda:</span>
+                            <span style="background: #fef08a; color: #854d0e; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 9999px;">{{ $order->orderDetails->sum('quantity') }} Item</span>
                         </div>
-                        <ul class="space-y-1.5 text-xs text-gray-800">
+                        <ul style="margin: 0; padding: 0; list-style: none; max-height: 160px; overflow-y: auto;">
                             @foreach($order->orderDetails as $detail)
-                                <li class="flex items-center justify-between py-1 border-b border-amber-100/60 last:border-b-0">
-                                    <span class="flex items-center space-x-1.5">
-                                        <svg class="w-3.5 h-3.5 text-amber-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
-                                        <span class="font-semibold">{{ $detail->quantity }}x</span>
-                                        <span>{{ $detail->bundle_id ? $detail->bundle->name . ' (Paket)' : $detail->menu->name }}</span>
-                                    </span>
+                                <li style="display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #fef3c7;">
+                                    <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
+                                        <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: #ea580c; color: #ffffff; border-radius: 6px; font-size: 11px; font-weight: 800; flex-shrink: 0;">
+                                            {{ $detail->quantity }}x
+                                        </span>
+                                        <span style="font-size: 12px; font-weight: 600; color: #1f2937; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                            {{ $detail->bundle_id ? $detail->bundle->name . ' (Paket)' : $detail->menu->name }}
+                                        </span>
+                                    </div>
+                                    <svg style="width: 16px; height: 16px; min-width: 16px; min-height: 16px; color: #16a34a; margin-left: 8px; flex-shrink: 0;" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
                                 </li>
                             @endforeach
                         </ul>
                     </div>
 
+                    <!-- Main Confirmation Button -->
                     <button
                         type="button"
                         wire:click="confirmOrderReceived"
                         wire:loading.attr="disabled"
                         wire:loading.class="opacity-50 cursor-not-allowed"
-                        class="w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 active:scale-95 text-white font-extrabold py-4 px-4 rounded-2xl shadow-lg shadow-orange-500/30 transition flex items-center justify-center space-x-2 text-sm"
+                        style="width: 100%; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #ffffff; font-weight: 800; font-size: 14px; padding: 14px 16px; border-radius: 16px; border: none; box-shadow: 0 10px 20px -5px rgba(234, 88, 12, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;"
                     >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                        <span wire:loading.remove wire:target="confirmOrderReceived">✓ Konfirmasi Pesanan Diterima</span>
+                        <svg style="width: 18px; height: 18px; min-width: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                        <span wire:loading.remove wire:target="confirmOrderReceived">Konfirmasi Pesanan Diterima</span>
                         <span wire:loading wire:target="confirmOrderReceived">Menyelesaikan Pesanan...</span>
                     </button>
 
+                    <!-- Later Button -->
                     <button
                         type="button"
                         @click="modalOpen = false"
-                        class="w-full mt-2 py-2.5 text-xs text-gray-500 hover:text-gray-700 font-semibold text-center transition"
+                        style="width: 100%; margin-top: 10px; padding: 10px; background: transparent; border: none; font-size: 12px; font-weight: 600; color: #6b7280; cursor: pointer; text-align: center;"
                     >
                         Periksa Nanti (Tutup Dialog)
                     </button>
@@ -483,42 +500,42 @@
                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                 x-transition:leave-end="opacity-0 translate-y-4 scale-95"
             >
-                <div class="bg-gradient-to-br from-emerald-600 to-teal-600 p-6 text-center text-white relative">
+                <div style="background: linear-gradient(135deg, #059669 0%, #0d9488 100%); padding: 24px 20px 20px; text-align: center; color: #ffffff; position: relative;">
                     <button 
                         @click="showLeaveModal = false" 
                         type="button" 
-                        class="absolute top-4 right-4 text-white/80 hover:text-white bg-black/10 hover:bg-black/20 rounded-full p-1.5 transition"
+                        style="position: absolute; top: 14px; right: 14px; color: #ffffff; background: rgba(0, 0, 0, 0.2); border: none; border-radius: 9999px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer;"
                     >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        <svg style="width: 16px; height: 16px; stroke-width: 2.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
 
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md mb-3 shadow-inner">
-                        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    <div style="display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; border-radius: 20px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px); margin-bottom: 12px; box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);">
+                        <svg style="width: 30px; height: 30px; color: #ffffff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     </div>
                     
-                    <h3 class="text-2xl font-black tracking-tight" id="leave-modal-title">Tinggalkan Meja?</h3>
-                    <p class="text-xs text-emerald-100 mt-1 font-medium">Meja {{ $order->table->table_number }} akan dikosongkan</p>
+                    <h3 style="font-size: 20px; font-weight: 900; color: #ffffff; margin: 0 0 4px 0; line-height: 1.2;" id="leave-modal-title">Tinggalkan Meja?</h3>
+                    <p style="font-size: 12px; color: #a7f3d0; margin: 0; font-weight: 500;">Meja {{ $order->table->table_number }} akan dikosongkan</p>
                 </div>
 
-                <div class="p-6">
-                    <p class="text-xs text-gray-600 mb-5 leading-relaxed text-center">
-                        Apakah Anda sudah selesai menikmati hidangan dan siap meninggalkan kafe? Status <span class="font-bold text-gray-900">Meja {{ $order->table->table_number }}</span> akan otomatis diubah menjadi <strong>Tersedia (Kosong)</strong> untuk pelanggan lain.
+                <div style="padding: 20px; background-color: #ffffff;">
+                    <p style="font-size: 12px; color: #4b5563; margin: 0 0 16px 0; line-height: 1.5; text-align: center; font-weight: 500;">
+                        Apakah Anda sudah selesai menikmati hidangan dan siap meninggalkan kafe? Status <strong style="color: #111827;">Meja {{ $order->table->table_number }}</strong> akan otomatis diubah menjadi <strong>Tersedia (Kosong)</strong> untuk pelanggan lain.
                     </p>
 
-                    <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl mb-5 text-[11px] text-amber-800 flex items-start space-x-2">
-                        <svg class="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div style="padding: 12px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; margin-bottom: 18px; font-size: 11px; color: #92400e; display: flex; align-items: flex-start; gap: 8px; line-height: 1.4;">
+                        <svg style="width: 16px; height: 16px; min-width: 16px; color: #d97706; margin-top: 1px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         <span>Pastikan Anda telah mengunduh atau menyimpan struk pesanan Anda sebelum meninggalkan halaman ini.</span>
                     </div>
 
-                    <div class="space-y-2">
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
                         <button
                             type="button"
                             wire:click="leaveTable"
                             wire:loading.attr="disabled"
                             wire:loading.class="opacity-50 cursor-not-allowed"
-                            class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-95 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm"
+                            style="width: 100%; background: linear-gradient(135deg, #059669 0%, #0d9488 100%); color: #ffffff; font-weight: 800; font-size: 13px; padding: 13px 16px; border-radius: 14px; border: none; box-shadow: 0 10px 20px -5px rgba(5, 150, 105, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;"
                         >
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <svg style="width: 16px; height: 16px; min-width: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                             <span wire:loading.remove wire:target="leaveTable">Ya, Saya Sudah Selesai &amp; Kosongkan Meja</span>
                             <span wire:loading wire:target="leaveTable">Mengosongkan Meja...</span>
                         </button>
@@ -526,7 +543,7 @@
                         <button
                             type="button"
                             @click="showLeaveModal = false"
-                            class="w-full py-2.5 text-xs text-gray-500 hover:text-gray-700 font-semibold text-center transition"
+                            style="width: 100%; padding: 10px; background: transparent; border: none; font-size: 12px; font-weight: 600; color: #6b7280; cursor: pointer; text-align: center;"
                         >
                             Batal (Masih di Meja)
                         </button>

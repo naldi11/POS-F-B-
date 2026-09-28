@@ -38,7 +38,7 @@
                             <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-amber-100 text-amber-800 uppercase animate-pulse">Siap Disajikan</span>
                         @endif
                         <span class="text-[11px] font-semibold text-gray-500 flex items-center justify-end mt-1 space-x-1">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <svg width="14" height="14" style="width: 14px; height: 14px; min-width: 14px; display: inline-block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             <span>{{ $order->created_at->diffForHumans() }}</span>
                         </span>
                     </div>
@@ -80,7 +80,7 @@
                         </div>
                     @elseif($order->status === 'ready')
                         <button wire:click="markAsServed({{ $order->id }})" wire:confirm="Pesanan sudah diantar ke Meja {{ $order->table->table_number }}?" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold py-3 rounded-xl transition text-sm flex justify-center items-center space-x-2 shadow-md">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                            <svg width="18" height="18" style="width: 18px; height: 18px; min-width: 18px; display: inline-block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                             <span>Antar &amp; Sajikan ke Meja {{ $order->table->table_number }}</span>
                         </button>
                     @endif

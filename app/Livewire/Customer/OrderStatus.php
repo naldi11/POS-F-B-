@@ -20,6 +20,13 @@ class OrderStatus extends Component
     public function mount($id)
     {
         $this->order = Order::with(['orderDetails.menu', 'orderDetails.bundle', 'payment', 'table'])->findOrFail($id);
+
+        // Jika pesanan sudah berstatus 'ready', otomatis beralih ke 'waiting_confirmation'
+        if ($this->order->status === 'ready') {
+            $this->order->update(['status' => 'waiting_confirmation']);
+            \App\Events\OrderUpdated::dispatch($this->order);
+            $this->order->refresh();
+        }
     }
 
     public function reuploadPayment()
@@ -111,6 +118,14 @@ class OrderStatus extends Component
     public function refreshOrder()
     {
         $this->order->refresh();
+
+        // Jika status berubah menjadi 'ready', otomatis beralih ke 'waiting_confirmation'
+        if ($this->order->status === 'ready') {
+            $this->order->update(['status' => 'waiting_confirmation']);
+            \App\Events\OrderUpdated::dispatch($this->order);
+            $this->order->refresh();
+        }
+
         $this->dispatch('order-updated', status: $this->order->status);
     }
 

@@ -47,8 +47,8 @@ class KitchenDashboard extends Component
     public function markAsReady($orderId)
     {
         $order = Order::find($orderId);
-        if ($order && in_array($order->status, ['verified', 'cooking'])) {
-            $order->update(['status' => 'ready']);
+        if ($order && in_array($order->status, ['verified', 'cooking', 'ready'])) {
+            $order->update(['status' => 'waiting_confirmation']);
             \App\Events\OrderUpdated::dispatch($order);
             $this->loadOrders();
         }

@@ -165,7 +165,13 @@ class CashierDashboard extends Component
     public function updateOrderStatus($orderId, $status)
     {
         $order = Order::find($orderId);
-        if ($order && $order->status !== $status) {
+        if ($order) {
+            if ($status === 'ready') {
+                $status = 'waiting_confirmation';
+            }
+            if ($order->status === $status) {
+                return;
+            }
             $oldStatus = $order->status;
             $order->update(['status' => $status]);
             $this->syncTableStatus($order->table_id);

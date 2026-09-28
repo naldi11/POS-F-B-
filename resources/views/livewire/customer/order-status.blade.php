@@ -84,6 +84,9 @@
                         ];
                         $stepKeys = array_keys($steps);
                         $currentIndex = array_search($order->status, $stepKeys);
+                        if ($order->status === 'ready') {
+                            $currentIndex = 4; // Aktif di tahap Menunggu Konfirmasi
+                        }
                         if ($currentIndex === false && $order->status === 'waiting_payment') $currentIndex = -1;
                     @endphp
 
@@ -239,7 +242,7 @@
             @endif
         </div>
         
-        @if($order->status === 'waiting_confirmation')
+        @if(in_array($order->status, ['waiting_confirmation', 'ready']))
         {{-- Card Banner Konfirmasi Pelanggan --}}
         <div class="rounded-3xl p-6 mb-6 text-center shadow-xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 relative overflow-hidden">
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-3 bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-lg shadow-orange-500/30">
@@ -348,7 +351,7 @@
     </div>
 
     <!-- MODAL POPUP OTOMATIS KONFIRMASI PENERIMAAN PESANAN -->
-    @if($order->status === 'waiting_confirmation')
+    @if(in_array($order->status, ['waiting_confirmation', 'ready']))
     <div 
         x-data="{ 
             modalOpen: true,
@@ -360,7 +363,8 @@
         }"
         x-show="modalOpen" 
         x-cloak 
-        class="fixed inset-0 z-50 overflow-y-auto"
+        class="fixed inset-0 overflow-y-auto"
+        style="z-index: 99999;"
         aria-labelledby="modal-title" 
         role="dialog" 
         aria-modal="true"

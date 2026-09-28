@@ -104,7 +104,15 @@
                         <span class="w-2 h-2 rounded-full {{ $t->status === 'occupied' ? 'bg-red-500 animate-pulse' : 'bg-green-500' }}"></span>
                     </div>
                     <div class="text-[11px] mb-2 font-medium {{ $t->status === 'occupied' ? 'text-red-700' : 'text-green-700' }}">
-                        {{ $t->status === 'occupied' ? 'Sedang Terisi' : 'Tersedia (Kosong)' }}
+                        @if($t->status === 'occupied')
+                            @if($t->active_orders_count > 0)
+                                Terisi ({{ $t->active_orders_count }} aktif)
+                            @else
+                                Pelanggan Masih di Meja
+                            @endif
+                        @else
+                            Tersedia (Kosong)
+                        @endif
                     </div>
                     @if($t->status === 'occupied')
                         <button 

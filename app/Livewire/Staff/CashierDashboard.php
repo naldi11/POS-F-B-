@@ -102,9 +102,12 @@ class CashierDashboard extends Component
             ->whereNotIn('status', ['completed', 'cancelled'])
             ->exists();
 
-        $newStatus = $hasActiveOrders ? 'occupied' : 'available';
-        if ($table->status !== $newStatus) {
-            $table->update(['status' => $newStatus]);
+        // Meja ditandai occupied jika ada pesanan yang aktif.
+        // Meja TIDAK otomatis di-set available saat pesanan completed,
+        // karena pelanggan masih berada di meja. Meja hanya kembali available
+        // jika pelanggan mengklik leaveTable() atau kasir mengklik forceReleaseTable().
+        if ($hasActiveOrders && $table->status !== 'occupied') {
+            $table->update(['status' => 'occupied']);
             \App\Events\TableUpdated::dispatch($table);
         }
     }

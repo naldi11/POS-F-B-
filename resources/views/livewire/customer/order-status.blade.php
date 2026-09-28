@@ -1,4 +1,66 @@
-<div class="min-h-screen bg-gray-50 pt-6 pb-24 relative">
+<div class="min-h-screen bg-gray-50 pt-6 pb-24 relative"
+     x-data="{
+         currentStatus: @js($order->status),
+         showConfirmModal: @js($order->status === 'waiting_confirmation'),
+         showLeaveModal: false,
+         playNotification() {
+             try {
+                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                 const oscillator = audioCtx.createOscillator();
+                 const gainNode = audioCtx.createGain();
+                 oscillator.connect(gainNode);
+                 gainNode.connect(audioCtx.destination);
+                 oscillator.type = 'sine';
+                 oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+                 oscillator.frequency.setValueAtTime(1108.73, audioCtx.currentTime + 0.1);
+                 gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                 oscillator.start(audioCtx.currentTime);
+                 oscillator.stop(audioCtx.currentTime + 0.5);
+             } catch(e) {}
+         },
+         playSuccessChime() {
+             try {
+                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                 const notes = [523.25, 659.25, 783.99, 1046.50];
+                 notes.forEach((freq, idx) => {
+                     const osc = audioCtx.createOscillator();
+                     const gain = audioCtx.createGain();
+                     osc.connect(gain);
+                     gain.connect(audioCtx.destination);
+                     osc.type = 'sine';
+                     osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.08);
+                     gain.gain.setValueAtTime(0.25, audioCtx.currentTime + idx * 0.08);
+                     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.08 + 0.35);
+                     osc.start(audioCtx.currentTime + idx * 0.08);
+                     osc.stop(audioCtx.currentTime + idx * 0.08 + 0.35);
+                 });
+             } catch(e) {}
+         },
+         showToast(msg, bg = '#ef4444') {
+             let toast = document.createElement('div');
+             toast.style.cssText = `position: fixed; top: 16px; left: 50%; transform: translateX(-50%); background-color: ${bg}; color: white; padding: 12px 24px; border-radius: 9999px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25); z-index: 99999; font-weight: bold; transition: opacity 0.5s; width: max-content; font-family: sans-serif; font-size: 14px; text-align: center;`;
+             toast.innerHTML = msg;
+             document.body.appendChild(toast);
+             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3500);
+         },
+         handleOrderUpdate(status) {
+             this.playNotification();
+             if (status === 'waiting_confirmation') {
+                 this.showConfirmModal = true;
+                 this.showToast('🍽️ Pesanan Anda telah tiba di meja! Mohon konfirmasi.', '#f59e0b');
+             } else if (status === 'completed') {
+                 this.showConfirmModal = false;
+                 this.playSuccessChime();
+                 this.showToast('🎉 Pesanan selesai dikonfirmasi!', '#10b981');
+             } else {
+                 this.showToast('🔔 Status pesanan Anda diperbarui!', '#f97316');
+             }
+         }
+     }"
+     @order-updated.window="handleOrderUpdate($event.detail?.status || '{{ $order->status }}')"
+     @order-confirmed.window="playSuccessChime(); showConfirmModal = false"
+>
     <div class="max-w-md mx-auto px-4">
         
         <!-- Header -->
@@ -24,32 +86,7 @@
                 </div>
                 
                 <!-- Tracking Timeline (GoFood/ShopeeFood Style) -->
-                <div class="mb-8 px-2 relative" x-data="{ 
-                    playNotification() {
-                        try {
-                            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                            const oscillator = audioCtx.createOscillator();
-                            const gainNode = audioCtx.createGain();
-                            oscillator.connect(gainNode);
-                            gainNode.connect(audioCtx.destination);
-                            oscillator.type = 'sine';
-                            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
-                            oscillator.frequency.setValueAtTime(1108.73, audioCtx.currentTime + 0.1); // C#6
-                            gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
-                            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-                            oscillator.start(audioCtx.currentTime);
-                            oscillator.stop(audioCtx.currentTime + 0.5);
-                            
-                            // Show toast
-                            let toast = document.createElement('div');
-                            toast.style.cssText = 'position: fixed; top: 16px; left: 50%; transform: translateX(-50%); background-color: #ef4444; color: white; padding: 12px 24px; border-radius: 9999px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); z-index: 9999; font-weight: bold; transition: opacity 0.5s; width: max-content; font-family: sans-serif; font-size: 14px; text-align: center;';
-                            toast.innerHTML = '🔔 Status pesanan Anda diperbarui!';
-                            document.body.appendChild(toast);
-                            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
-                        } catch(e) {}
-                    }
-                }"
-                @order-updated.window="playNotification()">
+                <div class="mb-8 px-2 relative">
                     @php
                         $steps = [
                             'waiting_verification' => ['label' => 'Menunggu Verifikasi', 'desc' => 'Kasir sedang memeriksa pesanan'],
@@ -217,34 +254,32 @@
         </div>
         
         @if($order->status === 'waiting_confirmation')
-        {{-- Card Konfirmasi Pelanggan --}}
+        {{-- Card Banner Konfirmasi Pelanggan --}}
         <div class="rounded-3xl p-6 mb-6 text-center shadow-xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 relative overflow-hidden">
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-3 bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-lg shadow-orange-500/30">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
             
             <div class="inline-block px-3.5 py-1 bg-amber-500/15 border border-amber-500/30 rounded-full text-xs font-black text-amber-800 uppercase tracking-wider mb-2">
-                Konfirmasi Penerimaan
+                Menunggu Konfirmasi Anda
             </div>
 
             <h3 class="text-xl font-black text-gray-900 mb-1">Pesanan Telah Tiba di Meja?</h3>
             <p class="text-xs text-gray-600 mb-5 leading-relaxed font-medium">
                 Hidangan Anda telah disajikan oleh staf kami ke <span class="font-bold text-gray-900">Meja {{ $order->table->table_number }}</span>.<br>
-                Silakan periksa kelengkapan item pesanan Anda. Jika sudah sesuai, silakan klik tombol di bawah untuk menyelesaikan pesanan &amp; melihat struk resmi Anda:
+                Silakan periksa kelengkapan hidangan di meja Anda.
             </p>
 
             <button
-                wire:click="confirmOrderReceived"
-                wire:loading.attr="disabled"
-                wire:loading.class="opacity-50 cursor-not-allowed"
+                type="button"
+                @click="showConfirmModal = true"
                 class="w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 active:scale-95 text-white font-extrabold py-4 px-6 rounded-2xl transition shadow-lg shadow-orange-500/30 flex items-center justify-center space-x-2 text-base"
             >
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                <span wire:loading.remove wire:target="confirmOrderReceived">✓ Konfirmasi Pesanan Sudah Diterima</span>
-                <span wire:loading wire:target="confirmOrderReceived">Memproses Konfirmasi...</span>
+                <span>✓ Konfirmasi Pesanan Sudah Diterima</span>
             </button>
             <p class="text-[11px] text-gray-400 mt-3">
-                Setelah dikonfirmasi, struk bukti pembayaran resmi akan langsung ditampilkan di sini.
+                Tekan tombol di atas untuk menyelesaikan pesanan &amp; melihat struk resmi Anda.
             </p>
         </div>
         @endif
@@ -264,8 +299,8 @@
             <div class="inline-flex items-center justify-center w-12 h-12 rounded-full mb-3 bg-gray-100 text-gray-900">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
             </div>
-            <h3 class="font-bold mb-1 text-gray-900">Simpan Bukti Pesanan</h3>
-            <p class="text-xs mb-4 leading-relaxed text-gray-600">Penting! Unduh struk ini ke perangkat Anda sebelum meninggalkan meja agar riwayat pesanan Anda tersimpan.</p>
+            <h3 class="font-bold mb-1 text-gray-900">Struk Resmi Pembayaran</h3>
+            <p class="text-xs mb-4 leading-relaxed text-gray-600">Simpan atau unduh gambar struk ini ke perangkat Anda sebagai bukti transaksi yang sah.</p>
             <div class="space-y-2">
                 <a href="{{ route('order.print', $order->id) }}?download=1" target="_blank" class="inline-flex justify-center items-center w-full font-bold py-3.5 px-4 rounded-xl transition shadow-sm space-x-2 bg-gray-900 hover:bg-black text-white active:scale-95 text-sm">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
@@ -278,24 +313,30 @@
             </div>
         </div>
 
-        {{-- Tombol Selesai & Tinggalkan Meja --}}
+        {{-- Kartu Status Meja & Tombol Tinggalkan Meja (Wajib Saat Selesai Makan) --}}
         <div class="rounded-3xl p-6 mb-6 text-center shadow-lg border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 via-teal-50 to-green-100 relative overflow-hidden">
             <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3 bg-emerald-500 text-white shadow-md">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
             </div>
+
+            <div class="inline-flex items-center space-x-1.5 px-3 py-1 bg-emerald-100 border border-emerald-300 rounded-full text-xs font-bold text-emerald-800 mb-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Meja {{ $order->table->table_number }} Sedang Anda Gunakan</span>
+            </div>
+
             <h3 class="text-xl font-black text-emerald-900 mb-1">Sudah Selesai Makan?</h3>
             <p class="text-xs text-emerald-700 mb-5 leading-relaxed font-medium">
-                Terima kasih sudah menikmati hidangan kami! 🙏<br>Tekan tombol di bawah ini sebelum meninggalkan meja untuk mengosongkan status meja Anda.
+                Terima kasih sudah menikmati hidangan kami! 🙏<br>
+                Saat Anda siap meninggalkan meja, <strong>silakan tekan tombol di bawah</strong> agar status meja Anda kembali kosong dan siap untuk pelanggan baru.
             </p>
+
             <button
-                wire:click="leaveTable"
-                wire:loading.attr="disabled"
-                wire:loading.class="opacity-50 cursor-not-allowed"
-                class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-95 text-white font-extrabold py-3.5 px-4 rounded-2xl transition shadow-lg flex items-center justify-center space-x-2 text-sm"
+                type="button"
+                @click="showLeaveModal = true"
+                class="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-700 active:scale-95 text-white font-extrabold py-4 px-4 rounded-2xl transition shadow-xl flex items-center justify-center space-x-2 text-sm"
             >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                <span wire:loading.remove wire:target="leaveTable">Saya Sudah Selesai &amp; Tinggalkan Meja</span>
-                <span wire:loading wire:target="leaveTable">Memproses...</span>
+                <span>Saya Sudah Selesai Makan &amp; Tinggalkan Meja</span>
             </button>
         </div>
         @else
@@ -315,5 +356,180 @@
             </div>
         </div>
         @endif
+    </div>
+
+    <!-- MODAL POPUP KONFIRMASI PENERIMAAN PESANAN -->
+    <div 
+        x-show="showConfirmModal" 
+        x-cloak 
+        class="fixed inset-0 z-50 overflow-y-auto"
+        aria-labelledby="modal-title" 
+        role="dialog" 
+        aria-modal="true"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+    >
+        <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity" @click="showConfirmModal = false"></div>
+
+        <div class="min-h-full flex items-center justify-center p-4 text-center">
+            <div 
+                class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all max-w-sm w-full border border-amber-200"
+                x-transition:enter="ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                x-transition:leave="ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                x-transition:leave-end="opacity-0 translate-y-4 scale-95"
+            >
+                <div class="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 p-6 text-center text-white relative">
+                    <button 
+                        @click="showConfirmModal = false" 
+                        type="button" 
+                        class="absolute top-4 right-4 text-white/80 hover:text-white bg-black/10 hover:bg-black/20 rounded-full p-1.5 transition"
+                        title="Tutup dialog"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md mb-3 shadow-inner">
+                        <svg class="w-10 h-10 text-white animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    
+                    <span class="inline-block px-3 py-0.5 bg-black/20 rounded-full text-[11px] font-black uppercase tracking-wider text-amber-100 mb-1">
+                        Pesanan Telah Tiba
+                    </span>
+                    <h3 class="text-2xl font-black tracking-tight" id="modal-title">Pesanan Sudah Diantar!</h3>
+                    <p class="text-xs text-amber-100 mt-1 font-medium">Staf kami telah menyajikan hidangan ke <span class="font-extrabold text-white underline">Meja {{ $order->table->table_number }}</span></p>
+                </div>
+
+                <div class="p-6">
+                    <p class="text-xs text-gray-600 mb-4 text-center leading-relaxed">
+                        Silakan periksa hidangan di meja Anda. Jika pesanan sudah lengkap dan sesuai, klik tombol konfirmasi di bawah:
+                    </p>
+
+                    <div class="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-3.5 mb-5 max-h-48 overflow-y-auto">
+                        <div class="text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-2 flex items-center justify-between">
+                            <span>Daftar Hidangan Anda:</span>
+                            <span class="text-amber-700 font-semibold">{{ $order->orderDetails->sum('quantity') }} Item</span>
+                        </div>
+                        <ul class="space-y-1.5 text-xs text-gray-800">
+                            @foreach($order->orderDetails as $detail)
+                                <li class="flex items-center justify-between py-1 border-b border-amber-100/60 last:border-b-0">
+                                    <span class="flex items-center space-x-1.5">
+                                        <svg class="w-3.5 h-3.5 text-amber-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                                        <span class="font-semibold">{{ $detail->quantity }}x</span>
+                                        <span>{{ $detail->bundle_id ? $detail->bundle->name . ' (Paket)' : $detail->menu->name }}</span>
+                                    </span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+
+                    <button
+                        type="button"
+                        wire:click="confirmOrderReceived"
+                        wire:loading.attr="disabled"
+                        wire:loading.class="opacity-50 cursor-not-allowed"
+                        class="w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 active:scale-95 text-white font-extrabold py-4 px-4 rounded-2xl shadow-lg shadow-orange-500/30 transition flex items-center justify-center space-x-2 text-sm"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                        <span wire:loading.remove wire:target="confirmOrderReceived">✓ Konfirmasi Pesanan Diterima</span>
+                        <span wire:loading wire:target="confirmOrderReceived">Menyelesaikan Pesanan...</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        @click="showConfirmModal = false"
+                        class="w-full mt-2 py-2.5 text-xs text-gray-500 hover:text-gray-700 font-semibold text-center transition"
+                    >
+                        Periksa Nanti (Tutup Dialog)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP KONFIRMASI TINGGALKAN MEJA -->
+    <div 
+        x-show="showLeaveModal" 
+        x-cloak 
+        class="fixed inset-0 z-50 overflow-y-auto"
+        aria-labelledby="leave-modal-title" 
+        role="dialog" 
+        aria-modal="true"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+    >
+        <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity" @click="showLeaveModal = false"></div>
+
+        <div class="min-h-full flex items-center justify-center p-4 text-center">
+            <div 
+                class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all max-w-sm w-full border border-emerald-200"
+                x-transition:enter="ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                x-transition:leave="ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                x-transition:leave-end="opacity-0 translate-y-4 scale-95"
+            >
+                <div class="bg-gradient-to-br from-emerald-600 to-teal-600 p-6 text-center text-white relative">
+                    <button 
+                        @click="showLeaveModal = false" 
+                        type="button" 
+                        class="absolute top-4 right-4 text-white/80 hover:text-white bg-black/10 hover:bg-black/20 rounded-full p-1.5 transition"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md mb-3 shadow-inner">
+                        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    </div>
+                    
+                    <h3 class="text-2xl font-black tracking-tight" id="leave-modal-title">Tinggalkan Meja?</h3>
+                    <p class="text-xs text-emerald-100 mt-1 font-medium">Meja {{ $order->table->table_number }} akan dikosongkan</p>
+                </div>
+
+                <div class="p-6">
+                    <p class="text-xs text-gray-600 mb-5 leading-relaxed text-center">
+                        Apakah Anda sudah selesai menikmati hidangan dan siap meninggalkan kafe? Status <span class="font-bold text-gray-900">Meja {{ $order->table->table_number }}</span> akan otomatis diubah menjadi <strong>Tersedia (Kosong)</strong> untuk pelanggan lain.
+                    </p>
+
+                    <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl mb-5 text-[11px] text-amber-800 flex items-start space-x-2">
+                        <svg class="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span>Pastikan Anda telah mengunduh atau menyimpan struk pesanan Anda sebelum meninggalkan halaman ini.</span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <button
+                            type="button"
+                            wire:click="leaveTable"
+                            wire:loading.attr="disabled"
+                            wire:loading.class="opacity-50 cursor-not-allowed"
+                            class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-95 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span wire:loading.remove wire:target="leaveTable">Ya, Saya Sudah Selesai &amp; Kosongkan Meja</span>
+                            <span wire:loading wire:target="leaveTable">Mengosongkan Meja...</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            @click="showLeaveModal = false"
+                            class="w-full py-2.5 text-xs text-gray-500 hover:text-gray-700 font-semibold text-center transition"
+                        >
+                            Batal (Masih di Meja)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

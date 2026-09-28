@@ -67,6 +67,12 @@ class OrderStatus extends Component
             'status' => 'completed'
         ]);
 
+        // Pastikan status meja tetap 'occupied' selama pelanggan masih berada di meja
+        if ($this->order->table && $this->order->table->status !== 'occupied') {
+            $this->order->table->update(['status' => 'occupied']);
+            \App\Events\TableUpdated::dispatch($this->order->table);
+        }
+
         // Tambahkan poin loyalitas jika ada
         if ($this->order->customer_id && $this->order->points_earned > 0) {
             $customer = \App\Models\Customer::find($this->order->customer_id);
@@ -79,6 +85,7 @@ class OrderStatus extends Component
 
         $this->order->refresh();
         session()->flash('message', 'Terima kasih telah mengonfirmasi pesanan Anda! Selamat menikmati hidangan 🙏');
+        $this->dispatch('order-confirmed');
     }
 
     /**
@@ -95,7 +102,7 @@ class OrderStatus extends Component
         Session::forget('table_number');
         Session::forget('cart');
 
-        session()->flash('message', 'Terima kasih telah berkunjung ke Rumpo Cafe! Sampai jumpa kembali 🙏');
+        session()->flash('message', 'Terima kasih telah berkunjung ke Rumpo Cafe! Meja Anda telah dikosongkan. Sampai jumpa kembali 🙏');
 
         return $this->redirect(route('welcome'), navigate: true);
     }
@@ -104,7 +111,7 @@ class OrderStatus extends Component
     public function refreshOrder()
     {
         $this->order->refresh();
-        $this->dispatch('order-updated');
+        $this->dispatch('order-updated', status: $this->order->status);
     }
 
     public function render()

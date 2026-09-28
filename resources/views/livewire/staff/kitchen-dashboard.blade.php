@@ -1,4 +1,4 @@
-<div class="p-6">
+<div class="p-6" wire:poll.3s="loadOrders">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-gray-900">Kitchen Dashboard</h2>
         <div class="flex space-x-2 text-sm text-gray-500 items-center">
@@ -29,10 +29,19 @@
                         <span class="text-xs text-orange-600 font-bold uppercase tracking-wider">Meja {{ $order->table->table_number }}</span>
                         <h3 class="font-bold text-lg text-gray-900">#{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</h3>
                     </div>
-                    <span class="text-xs font-semibold text-gray-500 flex items-center space-x-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <span>{{ $order->created_at->diffForHumans() }}</span>
-                    </span>
+                    <div class="text-right">
+                        @if($order->status === 'verified')
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-blue-100 text-blue-800 uppercase">Pesanan Masuk</span>
+                        @elseif($order->status === 'cooking')
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-purple-100 text-purple-800 uppercase">Dimasak</span>
+                        @elseif($order->status === 'ready')
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-amber-100 text-amber-800 uppercase animate-pulse">Siap Disajikan</span>
+                        @endif
+                        <span class="text-[11px] font-semibold text-gray-500 flex items-center justify-end mt-1 space-x-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>{{ $order->created_at->diffForHumans() }}</span>
+                        </span>
+                    </div>
                 </div>
                 
                 <div class="p-4 flex-grow">
@@ -50,11 +59,31 @@
                     </ul>
                 </div>
 
-                <div class="p-4 bg-gray-50 border-t border-gray-100">
-                    <button wire:click="markAsReady({{ $order->id }})" wire:confirm="Pesanan sudah siap dihidangkan?" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition text-sm flex justify-center items-center space-x-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        <span>Tandai Selesai Dimasak</span>
-                    </button>
+                <div class="p-4 bg-gray-50 border-t border-gray-100 space-y-2">
+                    @if($order->status === 'verified')
+                        <div class="grid grid-cols-2 gap-2">
+                            <button wire:click="startCooking({{ $order->id }})" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-2 rounded-xl transition text-xs flex justify-center items-center space-x-1">
+                                <span>Mulai Masak</span>
+                            </button>
+                            <button wire:click="markAsServed({{ $order->id }})" wire:confirm="Pesanan sudah selesai dan diantar ke Meja {{ $order->table->table_number }}?" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-2 rounded-xl transition text-xs flex justify-center items-center space-x-1">
+                                <span>Sajikan ke Meja</span>
+                            </button>
+                        </div>
+                    @elseif($order->status === 'cooking')
+                        <div class="grid grid-cols-2 gap-2">
+                            <button wire:click="markAsReady({{ $order->id }})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-2 rounded-xl transition text-xs flex justify-center items-center space-x-1">
+                                <span>Siap Saji</span>
+                            </button>
+                            <button wire:click="markAsServed({{ $order->id }})" wire:confirm="Pesanan sudah selesai dan diantar ke Meja {{ $order->table->table_number }}?" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-2 rounded-xl transition text-xs flex justify-center items-center space-x-1">
+                                <span>Sajikan ke Meja</span>
+                            </button>
+                        </div>
+                    @elseif($order->status === 'ready')
+                        <button wire:click="markAsServed({{ $order->id }})" wire:confirm="Pesanan sudah diantar ke Meja {{ $order->table->table_number }}?" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold py-3 rounded-xl transition text-sm flex justify-center items-center space-x-2 shadow-md">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                            <span>Antar &amp; Sajikan ke Meja {{ $order->table->table_number }}</span>
+                        </button>
+                    @endif
                 </div>
             </div>
         @empty

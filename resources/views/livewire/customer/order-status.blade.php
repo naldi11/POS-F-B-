@@ -1,7 +1,7 @@
 <div class="min-h-screen bg-gray-50 pt-6 pb-24 relative"
+     wire:poll.2s="refreshOrder"
      x-data="{
          currentStatus: @js($order->status),
-         showConfirmModal: @js($order->status === 'waiting_confirmation'),
          showLeaveModal: false,
          playNotification() {
              try {
@@ -13,7 +13,7 @@
                  oscillator.type = 'sine';
                  oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
                  oscillator.frequency.setValueAtTime(1108.73, audioCtx.currentTime + 0.1);
-                 gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+                 gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
                  gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
                  oscillator.start(audioCtx.currentTime);
                  oscillator.stop(audioCtx.currentTime + 0.5);
@@ -43,23 +43,9 @@
              toast.innerHTML = msg;
              document.body.appendChild(toast);
              setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3500);
-         },
-         handleOrderUpdate(status) {
-             this.playNotification();
-             if (status === 'waiting_confirmation') {
-                 this.showConfirmModal = true;
-                 this.showToast('🍽️ Pesanan Anda telah tiba di meja! Mohon konfirmasi.', '#f59e0b');
-             } else if (status === 'completed') {
-                 this.showConfirmModal = false;
-                 this.playSuccessChime();
-                 this.showToast('🎉 Pesanan selesai dikonfirmasi!', '#10b981');
-             } else {
-                 this.showToast('🔔 Status pesanan Anda diperbarui!', '#f97316');
-             }
          }
      }"
-     @order-updated.window="handleOrderUpdate($event.detail?.status || '{{ $order->status }}')"
-     @order-confirmed.window="playSuccessChime(); showConfirmModal = false"
+     @order-confirmed.window="playSuccessChime()"
 >
     <div class="max-w-md mx-auto px-4">
         
@@ -272,11 +258,14 @@
 
             <button
                 type="button"
-                @click="showConfirmModal = true"
+                wire:click="confirmOrderReceived"
+                wire:loading.attr="disabled"
+                wire:loading.class="opacity-50 cursor-not-allowed"
                 class="w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 active:scale-95 text-white font-extrabold py-4 px-6 rounded-2xl transition shadow-lg shadow-orange-500/30 flex items-center justify-center space-x-2 text-base"
             >
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                <span>✓ Konfirmasi Pesanan Sudah Diterima</span>
+                <span wire:loading.remove wire:target="confirmOrderReceived">✓ Konfirmasi Pesanan Sudah Diterima</span>
+                <span wire:loading wire:target="confirmOrderReceived">Memproses Konfirmasi...</span>
             </button>
             <p class="text-[11px] text-gray-400 mt-3">
                 Tekan tombol di atas untuk menyelesaikan pesanan &amp; melihat struk resmi Anda.
@@ -358,9 +347,18 @@
         @endif
     </div>
 
-    <!-- MODAL POPUP KONFIRMASI PENERIMAAN PESANAN -->
+    <!-- MODAL POPUP OTOMATIS KONFIRMASI PENERIMAAN PESANAN -->
+    @if($order->status === 'waiting_confirmation')
     <div 
-        x-show="showConfirmModal" 
+        x-data="{ 
+            modalOpen: true,
+            init() {
+                this.$nextTick(() => {
+                    playNotification();
+                });
+            }
+        }"
+        x-show="modalOpen" 
         x-cloak 
         class="fixed inset-0 z-50 overflow-y-auto"
         aria-labelledby="modal-title" 
@@ -373,7 +371,7 @@
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
     >
-        <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity" @click="showConfirmModal = false"></div>
+        <div class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity" @click="modalOpen = false"></div>
 
         <div class="min-h-full flex items-center justify-center p-4 text-center">
             <div 
@@ -387,7 +385,7 @@
             >
                 <div class="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 p-6 text-center text-white relative">
                     <button 
-                        @click="showConfirmModal = false" 
+                        @click="modalOpen = false" 
                         type="button" 
                         class="absolute top-4 right-4 text-white/80 hover:text-white bg-black/10 hover:bg-black/20 rounded-full p-1.5 transition"
                         title="Tutup dialog"
@@ -443,7 +441,7 @@
 
                     <button
                         type="button"
-                        @click="showConfirmModal = false"
+                        @click="modalOpen = false"
                         class="w-full mt-2 py-2.5 text-xs text-gray-500 hover:text-gray-700 font-semibold text-center transition"
                     >
                         Periksa Nanti (Tutup Dialog)
@@ -452,6 +450,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     <!-- MODAL POPUP KONFIRMASI TINGGALKAN MEJA -->
     <div 

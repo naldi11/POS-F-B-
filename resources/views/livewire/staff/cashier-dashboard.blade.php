@@ -1,4 +1,4 @@
-<div class="p-6">
+<div class="p-6" wire:poll.3s="refreshOrders">
     <div class="flex flex-col xl:flex-row xl:justify-between xl:items-center mb-6 gap-4">
         <div class="flex items-center gap-3 w-full xl:w-auto">
             <h2 class="text-2xl font-bold text-gray-900">Cashier Dashboard</h2>
@@ -221,12 +221,18 @@
                             </a>
                             
                             @if($order->status === 'verified')
-                                <button wire:click="updateOrderStatus({{ $order->id }}, 'cooking')" class="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 rounded-lg transition text-sm text-center">
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'cooking')" class="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 rounded-lg transition text-xs text-center">
                                     Mulai Masak
                                 </button>
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'waiting_confirmation')" wire:confirm="Pesanan langsung diantar ke Meja {{ $order->table->table_number }}?" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg transition text-xs text-center">
+                                    Sajikan ke Meja
+                                </button>
                             @elseif($order->status === 'cooking')
-                                <button wire:click="updateOrderStatus({{ $order->id }}, 'ready')" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition text-sm text-center">
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'ready')" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition text-xs text-center">
                                     Siap Saji
+                                </button>
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'waiting_confirmation')" wire:confirm="Pesanan sudah siap dan diantar ke Meja {{ $order->table->table_number }}?" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg transition text-xs text-center">
+                                    Sajikan ke Meja
                                 </button>
                             @elseif($order->status === 'ready')
                                 <button wire:click="updateOrderStatus({{ $order->id }}, 'waiting_confirmation')" wire:confirm="Pesanan sudah siap dan diantar ke Meja {{ $order->table->table_number }}?" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg transition text-xs flex justify-center items-center space-x-1 shadow-sm text-center">

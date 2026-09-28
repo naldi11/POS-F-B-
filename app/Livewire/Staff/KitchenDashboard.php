@@ -20,9 +20,9 @@ class KitchenDashboard extends Component
 
     public function loadOrders()
     {
-        // Only load orders that are 'processing'
+        // Load orders that are verified, cooking, or ready
         $this->orders = Order::with(['table', 'orderDetails.menu', 'orderDetails.bundle'])
-            ->whereIn('status', ['cooking', 'verified'])
+            ->whereIn('status', ['verified', 'cooking', 'ready'])
             ->orderBy('created_at', 'asc')
             ->get();
     }
@@ -34,12 +34,35 @@ class KitchenDashboard extends Component
         $this->dispatch('play-notification');
     }
 
+    public function startCooking($orderId)
+    {
+        $order = Order::find($orderId);
+        if ($order && $order->status === 'verified') {
+            $order->update(['status' => 'cooking']);
+            \App\Events\OrderUpdated::dispatch($order);
+            $this->loadOrders();
+        }
+    }
+
     public function markAsReady($orderId)
     {
         $order = Order::find($orderId);
         if ($order && in_array($order->status, ['verified', 'cooking'])) {
             $order->update(['status' => 'ready']);
+            \App\Events\OrderUpdated::dispatch($order);
+            $this->loadOrders();
+        }
+    }
 
+    /**
+     * Makanan diantar ke meja -> Mengubah status menjadi 'waiting_confirmation'
+     * sehingga muncul popup konfirmasi di HP pelanggan.
+     */
+    public function markAsServed($orderId)
+    {
+        $order = Order::find($orderId);
+        if ($order && in_array($order->status, ['verified', 'cooking', 'ready'])) {
+            $order->update(['status' => 'waiting_confirmation']);
             \App\Events\OrderUpdated::dispatch($order);
             $this->loadOrders();
         }

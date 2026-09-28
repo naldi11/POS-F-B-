@@ -135,6 +135,7 @@
                             'verified' => 'bg-blue-100 text-blue-800',
                             'cooking' => 'bg-purple-100 text-purple-800',
                             'ready' => 'bg-green-100 text-green-800',
+                            'waiting_confirmation' => 'bg-amber-100 text-amber-800 border border-amber-300',
                             'completed' => 'bg-gray-100 text-gray-800',
                         ];
                     @endphp
@@ -220,10 +221,30 @@
                                     Siap Saji
                                 </button>
                             @elseif($order->status === 'ready')
-                                <button wire:click="completeOrder({{ $order->id }})" wire:confirm="Tandai pesanan telah selesai disajikan?" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded-lg transition text-sm text-center">
-                                    Selesai
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'waiting_confirmation')" wire:confirm="Pesanan sudah siap dan diantar ke Meja {{ $order->table->table_number }}?" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg transition text-xs flex justify-center items-center space-x-1 shadow-sm text-center">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>Sajikan ke Meja</span>
                                 </button>
                             @endif
+                        </div>
+                    @elseif($order->status === 'waiting_confirmation')
+                        <div class="space-y-2">
+                            <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-center">
+                                <div class="flex items-center justify-center space-x-1.5 text-amber-800 text-xs font-bold mb-0.5">
+                                    <svg class="w-3.5 h-3.5 text-amber-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                    <span>Menunggu Konfirmasi Pelanggan</span>
+                                </div>
+                                <p class="text-[11px] text-amber-700">Hidangan telah diantar ke Meja {{ $order->table->table_number }}. Menunggu pelanggan konfirmasi.</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <a href="{{ route('order.print', $order->id) }}" target="_blank" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg transition text-xs flex justify-center items-center space-x-1">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                    <span>Struk</span>
+                                </a>
+                                <button wire:click="completeOrder({{ $order->id }})" wire:confirm="Selesaikan pesanan secara manual tanpa menunggu konfirmasi pelanggan?" class="flex-1 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-bold py-2 rounded-lg transition text-xs text-center shadow-sm">
+                                    Selesaikan Manual
+                                </button>
+                            </div>
                         </div>
                     @elseif($order->status === 'completed')
                         <div class="flex space-x-2">

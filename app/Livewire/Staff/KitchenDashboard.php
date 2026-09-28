@@ -37,25 +37,8 @@ class KitchenDashboard extends Component
     public function markAsReady($orderId)
     {
         $order = Order::find($orderId);
-        if ($order && $order->status !== 'completed') {
-            $order->update(['status' => 'completed']);
-            
-            if ($order->customer_id && $order->points_earned > 0) {
-                $customer = \App\Models\Customer::find($order->customer_id);
-                if ($customer) {
-                    $customer->increment('points', $order->points_earned);
-                }
-            }
-
-            $hasActiveOrders = Order::where('table_id', $order->table_id)
-                ->whereNotIn('status', ['completed', 'cancelled'])
-                ->exists();
-
-            if ($order->table) {
-                $order->table->update([
-                    'status' => $hasActiveOrders ? 'occupied' : 'available'
-                ]);
-            }
+        if ($order && in_array($order->status, ['verified', 'cooking'])) {
+            $order->update(['status' => 'ready']);
 
             \App\Events\OrderUpdated::dispatch($order);
             $this->loadOrders();

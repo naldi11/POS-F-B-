@@ -55,7 +55,8 @@
                             'waiting_verification' => ['label' => 'Menunggu Verifikasi', 'desc' => 'Kasir sedang memeriksa pesanan'],
                             'verified' => ['label' => 'Pesanan Diterima', 'desc' => 'Pesanan Anda sudah masuk antrean'],
                             'cooking' => ['label' => 'Sedang Dimasak', 'desc' => 'Koki sedang menyiapkan pesanan Anda'],
-                            'ready' => ['label' => 'Siap Disajikan', 'desc' => 'Pesanan siap diantar ke meja Anda'],
+                            'ready' => ['label' => 'Siap Disajikan', 'desc' => 'Pesanan siap / sedang diantar ke meja Anda'],
+                            'waiting_confirmation' => ['label' => 'Menunggu Konfirmasi', 'desc' => 'Pesanan tiba di meja, mohon konfirmasi'],
                             'completed' => ['label' => 'Selesai', 'desc' => 'Selamat menikmati hidangan!'],
                         ];
                         $stepKeys = array_keys($steps);
@@ -215,7 +216,68 @@
             @endif
         </div>
         
-        @if(in_array($order->status, ['ready', 'completed']))
+        @if($order->status === 'waiting_confirmation')
+        {{-- Card Konfirmasi Pelanggan --}}
+        <div class="rounded-3xl p-6 mb-6 text-center shadow-xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 relative overflow-hidden">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-3 bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-lg shadow-orange-500/30">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            
+            <div class="inline-block px-3.5 py-1 bg-amber-500/15 border border-amber-500/30 rounded-full text-xs font-black text-amber-800 uppercase tracking-wider mb-2">
+                Konfirmasi Penerimaan
+            </div>
+
+            <h3 class="text-xl font-black text-gray-900 mb-1">Pesanan Telah Tiba di Meja?</h3>
+            <p class="text-xs text-gray-600 mb-5 leading-relaxed font-medium">
+                Hidangan Anda telah disajikan oleh staf kami ke <span class="font-bold text-gray-900">Meja {{ $order->table->table_number }}</span>.<br>
+                Silakan periksa kelengkapan item pesanan Anda. Jika sudah sesuai, silakan klik tombol di bawah untuk menyelesaikan pesanan &amp; melihat struk resmi Anda:
+            </p>
+
+            <button
+                wire:click="confirmOrderReceived"
+                wire:loading.attr="disabled"
+                wire:loading.class="opacity-50 cursor-not-allowed"
+                class="w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 active:scale-95 text-white font-extrabold py-4 px-6 rounded-2xl transition shadow-lg shadow-orange-500/30 flex items-center justify-center space-x-2 text-base"
+            >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                <span wire:loading.remove wire:target="confirmOrderReceived">✓ Konfirmasi Pesanan Sudah Diterima</span>
+                <span wire:loading wire:target="confirmOrderReceived">Memproses Konfirmasi...</span>
+            </button>
+            <p class="text-[11px] text-gray-400 mt-3">
+                Setelah dikonfirmasi, struk bukti pembayaran resmi akan langsung ditampilkan di sini.
+            </p>
+        </div>
+        @endif
+
+        @if($order->status === 'completed')
+        {{-- Banner Selesai Dikonfirmasi --}}
+        <div class="rounded-3xl p-5 mb-4 text-center bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/20 mb-2">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h3 class="text-lg font-black mb-0.5">Pesanan Selesai Dikonfirmasi!</h3>
+            <p class="text-xs text-emerald-100 font-medium">Selamat menikmati hidangan Anda di Rumpo Cafe 🎉</p>
+        </div>
+
+        {{-- Download Struk --}}
+        <div class="rounded-2xl p-5 mb-4 text-center shadow-sm border bg-white border-gray-200">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full mb-3 bg-gray-100 text-gray-900">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            </div>
+            <h3 class="font-bold mb-1 text-gray-900">Simpan Bukti Pesanan</h3>
+            <p class="text-xs mb-4 leading-relaxed text-gray-600">Penting! Unduh struk ini ke perangkat Anda sebelum meninggalkan meja agar riwayat pesanan Anda tersimpan.</p>
+            <div class="space-y-2">
+                <a href="{{ route('order.print', $order->id) }}?download=1" target="_blank" class="inline-flex justify-center items-center w-full font-bold py-3.5 px-4 rounded-xl transition shadow-sm space-x-2 bg-gray-900 hover:bg-black text-white active:scale-95 text-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    <span>Unduh Gambar Struk</span>
+                </a>
+                <a href="{{ route('order.print', $order->id) }}" target="_blank" class="inline-flex justify-center items-center w-full font-semibold py-2.5 px-4 rounded-xl transition space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    <span>Buka / Cetak Struk</span>
+                </a>
+            </div>
+        </div>
+
         {{-- Tombol Selesai & Tinggalkan Meja --}}
         <div class="rounded-3xl p-6 mb-6 text-center shadow-lg border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 via-teal-50 to-green-100 relative overflow-hidden">
             <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3 bg-emerald-500 text-white shadow-md">
@@ -236,21 +298,6 @@
                 <span wire:loading wire:target="leaveTable">Memproses...</span>
             </button>
         </div>
-        @endif
-
-        @if($order->status === 'completed')
-        {{-- Download Struk --}}
-        <div class="rounded-2xl p-5 mb-4 text-center shadow-sm border" style="background-color: #f8fafc; border-color: #e2e8f0;">
-            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full mb-3" style="background-color: #e2e8f0; color: #0f172a;">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-            </div>
-            <h3 class="font-bold mb-2" style="color: #0f172a;">Simpan Bukti Pesanan</h3>
-            <p class="text-sm mb-4 leading-relaxed" style="color: #334155;">Penting! Unduh struk ini ke perangkat Anda sebelum menutup halaman agar riwayat pesanan Anda tidak hilang.</p>
-            <a href="{{ route('order.print', $order->id) }}?download=1" target="_blank" class="inline-flex justify-center items-center w-full font-bold py-3 px-4 rounded-xl transition shadow-sm space-x-2" style="background-color: #000000; color: #ffffff;">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                <span>Unduh Gambar Struk</span>
-            </a>
-        </div>
         @else
         <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6">
             <div class="flex items-start space-x-3">
@@ -266,6 +313,7 @@
                 <div class="w-2 h-2 bg-orange-600 rounded-full"></div>
                 <span class="text-xs font-bold">Menunggu update...</span>
             </div>
+        </div>
         @endif
     </div>
 </div>

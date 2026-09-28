@@ -55,6 +55,33 @@ class OrderStatus extends Component
     }
 
     /**
+     * Pelanggan mengonfirmasi bahwa pesanan sudah sampai dan diterima di meja.
+     */
+    public function confirmOrderReceived()
+    {
+        if (!$this->order || $this->order->status === 'completed') {
+            return;
+        }
+
+        $this->order->update([
+            'status' => 'completed'
+        ]);
+
+        // Tambahkan poin loyalitas jika ada
+        if ($this->order->customer_id && $this->order->points_earned > 0) {
+            $customer = \App\Models\Customer::find($this->order->customer_id);
+            if ($customer) {
+                $customer->increment('points', $this->order->points_earned);
+            }
+        }
+
+        \App\Events\OrderUpdated::dispatch($this->order);
+
+        $this->order->refresh();
+        session()->flash('message', 'Terima kasih telah mengonfirmasi pesanan Anda! Selamat menikmati hidangan 🙏');
+    }
+
+    /**
      * Pelanggan menekan tombol "Selesai Makan & Tinggalkan Meja".
      */
     public function leaveTable()

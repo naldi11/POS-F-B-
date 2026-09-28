@@ -163,7 +163,7 @@ CREATE TABLE `orders` (
     `points_earned` INT NOT NULL DEFAULT 0,
     `points_redeemed` INT NOT NULL DEFAULT 0,
     `promotion_id` BIGINT UNSIGNED NULL DEFAULT NULL,
-    `status` ENUM('waiting_payment', 'waiting_verification', 'verified', 'cooking', 'ready', 'completed', 'cancelled') NOT NULL DEFAULT 'waiting_payment',
+    `status` ENUM('waiting_payment', 'waiting_verification', 'verified', 'cooking', 'ready', 'waiting_confirmation', 'completed', 'cancelled') NOT NULL DEFAULT 'waiting_payment',
     `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT `fk_orders_table` FOREIGN KEY (`table_id`) REFERENCES `tables` (`table_id`) ON DELETE CASCADE,
